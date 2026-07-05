@@ -53,6 +53,13 @@ export async function uploadAsset(bucket, file, prefix = '') {
   return data.publicUrl;
 }
 
+// ---- video (import) ----
+
+// Import an existing video file into the "videos" bucket.
+export async function uploadVideo(file, prefix = 'imports/') {
+  return uploadAsset('videos', file, prefix);
+}
+
 // ---- uploads (fan lab) ----
 export async function recordUpload(imageUrl, analysisResult) {
   const { data: { user } } = await supabase.auth.getUser();

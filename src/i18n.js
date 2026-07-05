@@ -7,7 +7,8 @@ export const T = {
     secArchive: 'CHARACTER ARCHIVE', secShowroom: '3D INTERACTIVE SHOWROOM', secLab: 'UPLOAD CHARACTER LAB',
     adminTitle: 'ADMIN CONSOLE', signIn: 'SIGN IN', signOut: 'SIGN OUT',
     save: 'SAVE CHARACTER', cancel: 'CANCEL', newChar: 'NEW CHARACTER',
-    analyzing: 'ANALYZING CHARACTER...', addArchive: 'ADD TO ARCHIVE'
+    analyzing: 'ANALYZING CHARACTER...', addArchive: 'ADD TO ARCHIVE',
+    motionReel: 'MOTION REEL', importVideo: 'IMPORT VIDEO', removeVideo: 'REMOVE'
   },
   zh: {
     tagline: '銀河機甲角色實驗室',
@@ -17,7 +18,8 @@ export const T = {
     secArchive: '角色檔案庫', secShowroom: '3D 互動展示間', secLab: '角色上傳實驗室',
     adminTitle: '管理後台', signIn: '登入', signOut: '登出',
     save: '儲存角色', cancel: '取消', newChar: '新增角色',
-    analyzing: '角色分析中...', addArchive: '加入檔案庫'
+    analyzing: '角色分析中...', addArchive: '加入檔案庫',
+    motionReel: '動態影片', importVideo: '導入影片', removeVideo: '移除'
   }
 };
 

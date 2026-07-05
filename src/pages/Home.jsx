@@ -41,18 +41,24 @@ export default function Home() {
         {/* Background cover image */}
         {active && (
           <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+            animate={{ scale: [1, 1.06, 1] }}
+            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
             className="absolute inset-0 z-0"
           >
-            <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/60 to-ink" />
-            <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-transparent to-ink/80" />
+            {active.video_url ? (
+              <video src={active.video_url} autoPlay muted loop playsInline
+                poster={active.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
+            ) : (
+              <img src={active.cover_image_url} alt={active.name} className="absolute inset-0 w-full h-full object-cover" />
+            )}
+            {/* Soft fade only — no frame; the reel fills the screen and blends into the page below */}
+            <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink" />
           </motion.div>
         )}
 
         {/* Foreground content */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}
+          style={{ textShadow: '0 2px 34px rgba(4,5,13,0.9)' }}
           className="relative z-10 text-center px-8 lg:px-20 pt-32 pb-16 max-w-3xl mx-auto">
           <div className="text-ice font-mono text-xs tracking-[0.4em] mb-6">{t.heroEyebrow}</div>
           <h1 className="font-display text-5xl lg:text-7xl tracking-widest mb-8">NEURA MUSE</h1>
@@ -82,7 +88,15 @@ export default function Home() {
         {active && (
           <motion.div key={active.id} initial={{ opacity: 0, scale: 1.02 }} animate={{ opacity: 1, scale: 1 }}
             className="grid lg:grid-cols-2 rounded-2xl border border-white/15 overflow-hidden bg-white/[0.03] backdrop-blur-xl">
-            <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover min-h-[320px]" />
+            {active.video_url ? (
+              <div className="relative min-h-[320px] bg-ink">
+                <video src={active.video_url} controls autoPlay muted loop playsInline
+                  poster={active.cover_image_url} className="w-full h-full object-cover min-h-[320px]" />
+                <div className="absolute top-4 left-4 font-mono text-[9px] tracking-[0.3em] px-2.5 py-1 rounded-full bg-ink/70 border border-ice/40 text-ice">▶ {t.motionReel}</div>
+              </div>
+            ) : (
+              <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover min-h-[320px]" />
+            )}
             <div className="p-10">
               <div className="font-display text-2xl tracking-[0.2em] mb-6">{active.name}</div>
               <dl className="grid grid-cols-2 gap-x-8 text-sm">

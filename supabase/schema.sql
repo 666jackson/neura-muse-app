@@ -12,6 +12,7 @@ create table if not exists public.characters (
   cover_image_url text,
   gallery_images jsonb default '[]'::jsonb,
   model_url text,                        -- .glb / .gltf in the "models" bucket
+  video_url text,                        -- imported motion reel (mp4 in "videos" bucket)
   armor_type text,
   weapon_system text,
   energy_core text,
@@ -102,13 +103,14 @@ create policy "admins readable by admins" on public.admins
 insert into storage.buckets (id, name, public) values
   ('characters', 'characters', true),
   ('models', 'models', true),
-  ('uploads', 'uploads', true)
+  ('uploads', 'uploads', true),
+  ('videos', 'videos', true)
 on conflict (id) do nothing;
 
 create policy "public read character assets" on storage.objects
-  for select using (bucket_id in ('characters', 'models', 'uploads'));
+  for select using (bucket_id in ('characters', 'models', 'uploads', 'videos'));
 create policy "admin write character assets" on storage.objects
-  for insert with check (bucket_id in ('characters', 'models') and public.is_admin());
+  for insert with check (bucket_id in ('characters', 'models', 'videos') and public.is_admin());
 create policy "anyone can add fan uploads" on storage.objects
   for insert with check (bucket_id = 'uploads');
 
@@ -120,6 +122,13 @@ begin new.updated_at = now(); return new; end; $$;
 drop trigger if exists characters_touch on public.characters;
 create trigger characters_touch before update on public.characters
   for each row execute function public.touch_updated_at();
+
+-- ============ MIGRATION (existing databases) ============
+-- Safe to re-run; adds the video columns + bucket to an already-provisioned DB.
+alter table public.characters add column if not exists video_url text;
+
+insert into storage.buckets (id, name, public) values ('videos', 'videos', true)
+on conflict (id) do nothing;
 
 -- ============ BOOTSTRAP ============
 -- 1. Create your admin user in Authentication > Users.

@@ -31,9 +31,15 @@ React + Tailwind + Framer Motion + Supabase (Postgres / Auth / Storage), PWA-rea
 ## Routes
 - `/` — public archive (reads only `is_public = true` characters)
 - `/admin/login` — Supabase Auth sign-in
-- `/admin/dashboard` — character CRUD, cover upload, .glb/.gltf model upload, publish toggle
+- `/admin/dashboard` — character CRUD, cover upload, .glb/.gltf model upload, video import, publish toggle
+
+## Motion reels (video)
+Each character has a `video_url`. In the admin **Motion Reel** panel, use **導入影片
+(Import video)** to upload a clip into the `videos` bucket. Reels play full-bleed as the
+home hero background, in the archive detail panel, and on card hover.
 
 ## Notes
 - 3D Showroom renders `model_url` (.glb/.gltf) via <model-viewer>; falls back to a CSS hologram when absent.
 - Upload Lab stores fan images in the `uploads` bucket and logs the mock analysis to the `uploads` table.
 - PWA via vite-plugin-pwa — add real icons at `public/icons/icon-192.png` and `icon-512.png`.
+- Run the migration block at the bottom of `supabase/schema.sql` on existing projects to add the video columns + bucket.

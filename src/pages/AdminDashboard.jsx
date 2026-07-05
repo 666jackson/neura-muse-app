@@ -1,12 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchAllCharacters, upsertCharacter, deleteCharacter, uploadAsset, signOut } from '../lib/supabase.js';
+import { fetchAllCharacters, upsertCharacter, deleteCharacter, uploadAsset, uploadVideo, signOut } from '../lib/supabase.js';
 import { T } from '../i18n.js';
 
 const EMPTY = {
   name: '', slug: '', armor_type: '', weapon_system: '', energy_core: '',
   cinematic_description: '', color_theme: '#7dd3fc', rarity_level: 'SR',
-  cover_image_url: '', gallery_images: [], model_url: '', is_public: true
+  cover_image_url: '', gallery_images: [], model_url: '', video_url: '', is_public: true
 };
 
 export default function AdminDashboard({ session }) {
@@ -43,6 +43,17 @@ export default function AdminDashboard({ session }) {
     try {
       const url = await uploadAsset('models', f, 'glb/');
       setForm({ ...form, model_url: url });
+    } catch (err) { setError(err.message); } finally { setBusy(false); }
+  };
+
+  // ---- 導入影片 (import an existing video file) ----
+  const importVideo = async (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    setBusy(true); setError(null);
+    try {
+      const url = await uploadVideo(f);
+      setForm((prev) => ({ ...prev, video_url: url }));
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
@@ -125,6 +136,31 @@ export default function AdminDashboard({ session }) {
                 {form.model_url && <div className="mt-2 font-mono text-[9px] text-ice truncate">{form.model_url}</div>}
               </div>
             </div>
+            {/* ---- MOTION REEL: import + AI generate ---- */}
+            <div className="mb-6 rounded-xl border border-ice/25 bg-ice/[0.03] p-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="font-mono text-[9px] tracking-[0.3em] text-ice">{t.motionReel}</label>
+                {form.video_url && (
+                  <button type="button" onClick={() => setForm({ ...form, video_url: '' })}
+                    className="font-mono text-[9px] tracking-widest text-red-400 hover:underline">{t.removeVideo}</button>
+                )}
+              </div>
+
+              {form.video_url ? (
+                <video src={form.video_url} controls playsInline
+                  className="w-full max-h-52 rounded-lg border border-white/10 bg-ink mb-3 object-contain" />
+              ) : (
+                <div className="h-24 rounded-lg border border-dashed border-white/15 flex items-center justify-center font-mono text-[9px] tracking-[0.3em] text-chrome/35 mb-3">
+                  NO REEL YET
+                </div>
+              )}
+
+              <label className="inline-flex font-mono text-[10px] tracking-widest text-ice border border-ice/40 rounded-lg px-3 py-2 cursor-pointer hover:bg-ice/10">
+                ↥ {t.importVideo}
+                <input type="file" accept="video/*" hidden onChange={importVideo} />
+              </label>
+            </div>
+
             <label className="flex items-center gap-3 mb-6 font-mono text-[10px] tracking-widest text-chrome/60">
               <input type="checkbox" checked={!!form.is_public} onChange={(e) => setForm({ ...form, is_public: e.target.checked })} />
               PUBLIC ON WEBSITE
