@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#04050d;}
+::selection{background:rgba(125,211,252,0.35);}
+@keyframes cmaFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes cmaScanY{0%{top:-25%}100%{top:120%}}
+@keyframes cmaPulse{0%,100%{opacity:1}50%{opacity:0.35}}
+@keyframes cmaFlow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+@keyframes cmaSceneIn{0%{opacity:0;transform:scale(1.04);filter:blur(6px)}100%{opacity:1;transform:scale(1);filter:blur(0)}}
+@keyframes cmaBeamX{0%{transform:translateX(-120%) skewX(-12deg)}100%{transform:translateX(1400%) skewX(-12deg)}}
+@keyframes cmaFadeUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes cmaIntroFade{0%,72%{opacity:1}100%{opacity:0}}
+@keyframes cmaIntroBar{0%{width:0%}70%{width:82%}100%{width:100%}}
+@keyframes cmaRingSpin{0%{transform:rotateX(76deg) rotate(0deg)}100%{transform:rotateX(76deg) rotate(360deg)}}
+@keyframes cmaHoloFlicker{0%,100%{opacity:0.92}92%{opacity:0.92}94%{opacity:0.45}96%{opacity:0.9}98%{opacity:0.6}}
+@keyframes cmaGlitchA{0%,93%{clip-path:inset(100% 0 0 0);transform:translateX(0)}94%{clip-path:inset(18% 0 62% 0);transform:translateX(-5px)}96%{clip-path:inset(58% 0 12% 0);transform:translateX(5px)}98%{clip-path:inset(8% 0 82% 0);transform:translateX(-3px)}100%{clip-path:inset(100% 0 0 0);transform:translateX(0)}}
+@keyframes cmaGlitchB{0%,90%{clip-path:inset(100% 0 0 0);transform:translateX(0)}91%{clip-path:inset(70% 0 8% 0);transform:translateX(4px)}93%{clip-path:inset(28% 0 52% 0);transform:translateX(-5px)}95%{clip-path:inset(85% 0 4% 0);transform:translateX(2px)}100%{clip-path:inset(100% 0 0 0);transform:translateX(0)}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#04050d;color:#e8ecf4;font-family:'Space Grotesk',sans-serif;overflow-x:hidden;position:relative">
+
+  <canvas ref="{{ starsRef }}" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
+  <div style="position:fixed;top:-20%;left:-10%;width:60vw;height:60vw;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.13),transparent 65%);z-index:0;pointer-events:none"></div>
+  <div style="position:fixed;bottom:-25%;right:-15%;width:70vw;height:70vw;border-radius:50%;background:radial-gradient(circle,rgba(236,72,153,0.09),transparent 65%);z-index:0;pointer-events:none"></div>
+  <div style="position:fixed;top:30%;right:10%;width:30vw;height:30vw;border-radius:50%;background:radial-gradient(circle,rgba(125,211,252,0.08),transparent 60%);z-index:0;pointer-events:none"></div>
+
+  <sc-if value="{{ showIntro }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:100;background:#04050d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;animation:cmaIntroFade 3s ease forwards;pointer-events:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:6px;color:rgba(125,211,252,0.8)">INITIALIZING ARCHIVE — SECTOR 07</div>
+      <div style="font-family:'Michroma',sans-serif;font-size:clamp(24px,4vw,44px);letter-spacing:8px;text-align:center">CYBER MUSE<br>ARCHIVE</div>
+      <div style="width:280px;height:1px;background:rgba(255,255,255,0.12);position:relative;overflow:hidden">
+        <div style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#7dd3fc,#f9a8d4);animation:cmaIntroBar 2.2s ease forwards"></div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4)">DECRYPTING CHARACTER FRAMES ▮▮▮</div>
+    </div>
+  </sc-if>
+
+  <header data-screen-label="Header" style="position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 36px;background:rgba(4,5,13,0.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.08)">
+    <div style="display:flex;align-items:center;gap:14px;cursor:pointer" onClick="{{ goTop }}">
+      <div style="width:12px;height:12px;background:linear-gradient(135deg,#7dd3fc,#f9a8d4);transform:rotate(45deg);box-shadow:0 0 14px rgba(125,211,252,0.8)"></div>
+      <div>
+        <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:4px">CYBER MUSE ARCHIVE</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-top:3px">VOL.02 — GALAXY ARMOR CHARACTER LAB</div>
+      </div>
+    </div>
+    <sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;gap:26px">
+        <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="5">
+          <button onClick="{{ nv.go }}" style="background:none;border:none;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:rgba(232,236,244,0.6);padding:6px 0" style-hover="color:#7dd3fc;text-shadow:0 0 12px rgba(125,211,252,0.6)">{{ nv.label }}</button>
+        </sc-for>
+      </nav>
+    </sc-if>
+    <div style="display:flex;border:1px solid rgba(255,255,255,0.18);border-radius:999px;padding:3px;gap:3px;background:rgba(255,255,255,0.04)">
+      <sc-for list="{{ modeBtns }}" as="mb" hint-placeholder-count="2">
+        <button onClick="{{ mb.select }}" style="border:none;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;padding:7px 16px;border-radius:999px;background:{{ mb.bg }};color:{{ mb.col }};transition:all 0.3s">{{ mb.label }} MODE</button>
+      </sc-for>
+    </div>
+  </header>
+
+  <sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+  <main style="position:relative;z-index:1">
+
+    <section id="home" data-screen-label="Hero" style="min-height:100vh;max-width:1440px;margin:0 auto;display:grid;grid-template-columns:1.1fr 0.9fr;align-items:center;gap:56px;padding:150px 72px 90px;box-sizing:border-box">
+      <div style="animation:cmaFadeUp 1.2s ease both">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:5px;color:#7dd3fc;margin-bottom:26px;display:flex;align-items:center;gap:12px">
+          <span style="display:inline-block;width:40px;height:1px;background:#7dd3fc"></span>
+          A CINEMATIC ARCHIVE OF CYBERNETIC MUSES
+        </div>
+        <h1 style="position:relative;font-family:'Michroma',sans-serif;font-size:clamp(40px,4.6vw,68px);line-height:1.14;letter-spacing:3px;margin:0 0 30px;font-weight:400">
+          <span style="position:relative;z-index:2">CYBER MUSE ARCHIVE</span>
+          <span aria-hidden="true" style="position:absolute;inset:0;color:#7dd3fc;z-index:1;animation:cmaGlitchA 3.4s steps(1) infinite">CYBER MUSE ARCHIVE</span>
+          <span aria-hidden="true" style="position:absolute;inset:0;color:#f9a8d4;z-index:1;animation:cmaGlitchB 2.9s steps(1) infinite">CYBER MUSE ARCHIVE</span>
+        </h1>
+        <p style="max-width:480px;font-size:15px;font-weight:300;line-height:1.9;color:rgba(232,236,244,0.6);margin:0 0 40px">Upload your character. Enter the galaxy. Every frame is a weaponized fashion statement — designed for future idols, android warriors, and cinematic avatars.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:52px">
+          <div style="padding:1px;border-radius:10px;background:linear-gradient(90deg,#7dd3fc,#f9a8d4,#a78bfa,#7dd3fc);background-size:300% 100%;animation:cmaFlow 4s linear infinite">
+            <button onClick="{{ goArchive }}" style="border:none;cursor:pointer;border-radius:9px;background:#070a16;color:#e8ecf4;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:16px 28px" style-hover="background:#0d1226">ENTER ARCHIVE</button>
+          </div>
+          <button onClick="{{ goShowroom }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(125,211,252,0.45);background:rgba(125,211,252,0.06);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:16px 28px" style-hover="background:rgba(125,211,252,0.16);box-shadow:0 0 24px rgba(125,211,252,0.3)">VIEW 3D MODEL</button>
+          <button onClick="{{ goUpload }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(249,168,212,0.45);background:rgba(249,168,212,0.06);color:#f9a8d4;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:16px 28px" style-hover="background:rgba(249,168,212,0.16);box-shadow:0 0 24px rgba(249,168,212,0.3)">UPLOAD CHARACTER</button>
+        </div>
+        <div style="display:flex;gap:44px;font-family:ui-monospace,Menlo,monospace">
+          <div><div style="font-size:22px;color:#e8ecf4;letter-spacing:2px">04</div><div style="font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-top:5px">UNITS REGISTERED</div></div>
+          <div><div style="font-size:22px;color:#e8ecf4;letter-spacing:2px">07</div><div style="font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-top:5px">CINEMATIC FRAMES</div></div>
+          <div><div style="font-size:22px;color:#7dd3fc;letter-spacing:2px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 10px #7dd3fc;animation:cmaPulse 1.6s infinite"></span>LIVE</div><div style="font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-top:5px">ARCHIVE STATUS</div></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center">
+        <div style="position:relative;width:min(420px,100%);aspect-ratio:3/4;border-radius:18px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;animation:cmaFloat 7s ease-in-out infinite;box-shadow:0 40px 90px rgba(0,0,0,0.6),0 0 60px rgba(125,211,252,0.18)">
+          <img src="assets/silver-valkyrie.jpeg" alt="Silver Valkyrie" style="width:100%;height:100%;object-fit:cover;object-position:center 32%;display:block">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.14) 0 1px,transparent 1px 3px);pointer-events:none"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,5,13,0.25),transparent 30%,transparent 55%,rgba(4,5,13,0.9));pointer-events:none"></div>
+          <div style="position:absolute;left:0;right:0;height:90px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.22),transparent);animation:cmaScanY 5s linear infinite;pointer-events:none"></div>
+          <div style="position:absolute;top:14px;left:14px;width:26px;height:26px;border-top:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+          <div style="position:absolute;top:14px;right:14px;width:26px;height:26px;border-top:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+          <div style="position:absolute;bottom:14px;left:14px;width:26px;height:26px;border-bottom:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+          <div style="position:absolute;bottom:14px;right:14px;width:26px;height:26px;border-bottom:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+          <div style="position:absolute;top:24px;right:-1px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:#7dd3fc;background:rgba(4,5,13,0.7);border:1px solid rgba(125,211,252,0.4);border-right:none;padding:7px 12px;backdrop-filter:blur(8px)">CRYO CORE ▮ 98%</div>
+          <div style="position:absolute;bottom:26px;left:26px;right:26px">
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;margin-bottom:8px">UNIT-01 · PRIME FRAME</div>
+            <div style="font-family:'Michroma',sans-serif;font-size:20px;letter-spacing:3px">SILVER VALKYRIE</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="archive" data-screen-label="Character Archive" style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:48px">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#7dd3fc">01 / ARCHIVE</div>
+        <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">CHARACTER ARCHIVE</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:36px">
+        <sc-for list="{{ chars }}" as="ch" hint-placeholder-count="4">
+          <button onClick="{{ ch.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;position:relative;border-radius:14px;overflow:hidden;aspect-ratio:0.72;border:1px solid {{ ch.borderCol }};background:#0a0c18;transition:transform 0.4s,box-shadow 0.4s,border-color 0.4s;display:block" style-hover="transform:perspective(900px) rotateX(3deg) rotateY(-4deg) translateY(-8px);box-shadow:0 28px 60px rgba(0,0,0,0.55),0 0 40px {{ ch.glow }};border-color:rgba(255,255,255,0.5)">
+            <img src="{{ ch.img }}" alt="{{ ch.name }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0 1px,transparent 1px 4px)"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(4,5,13,0.95))"></div>
+            <div style="position:absolute;top:12px;right:12px;width:9px;height:9px;border-radius:50%;background:{{ ch.dotCol }};box-shadow:0 0 10px {{ ch.dotCol }}"></div>
+            <div style="position:absolute;bottom:16px;left:16px;right:16px">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:{{ ch.accent }};margin-bottom:6px">{{ ch.code }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:14px;letter-spacing:2px;color:#e8ecf4;margin-bottom:5px">{{ ch.name }}</div>
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1px;color:rgba(232,236,244,0.5)">{{ ch.armorType }}</div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+      <div key="{{ ac.id }}" style="display:grid;grid-template-columns:0.85fr 1.15fr;gap:0;border:1px solid rgba(255,255,255,0.14);border-radius:18px;overflow:hidden;background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);animation:cmaSceneIn 0.7s ease both">
+        <div style="position:relative;min-height:460px;border-right:1px solid rgba(255,255,255,0.1)">
+          <img src="{{ ac.blueprint }}" alt="{{ ac.name }} blueprint" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,5,13,0.15),transparent 40%,rgba(4,5,13,0.75))"></div>
+          <div style="position:absolute;left:0;right:0;height:70px;background:linear-gradient(180deg,transparent,{{ ac.accentSoft }},transparent);animation:cmaScanY 6s linear infinite"></div>
+          <div style="position:absolute;bottom:18px;left:20px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:{{ ac.accent }}">BLUEPRINT FEED · {{ ac.code }}</div>
+        </div>
+        <div style="padding:44px 48px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+            <div style="width:34px;height:2px;background:{{ ac.accent }};box-shadow:0 0 12px {{ ac.accent }}"></div>
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:4px;color:{{ ac.accent }}">{{ ac.code }} — DOSSIER</div>
+          </div>
+          <div style="font-family:'Michroma',sans-serif;font-size:30px;letter-spacing:3px;margin-bottom:28px">{{ ac.name }}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;margin-bottom:26px">
+            <sc-for list="{{ acRows }}" as="row" hint-placeholder-count="4">
+              <div style="padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-bottom:6px">{{ row.k }}</div>
+                <div style="font-size:14px;font-weight:500;letter-spacing:0.5px">{{ row.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-bottom:10px">CINEMATIC DESCRIPTION</div>
+          <p style="font-size:14px;font-weight:300;line-height:1.85;color:rgba(232,236,244,0.72);margin:0 0 26px">{{ ac.desc }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <sc-for list="{{ acFeatures }}" as="feat" hint-placeholder-count="3">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:1.5px;color:{{ ac.accent }};border:1px solid {{ ac.accentSoft }};background:rgba(255,255,255,0.03);border-radius:999px;padding:7px 14px">▸ {{ feat }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="storyboard" data-screen-label="Storyboard Mode" style="border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.015)">
+      <div style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+        <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:14px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#f9a8d4">02 / STORYBOARD</div>
+          <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">CINEMATIC TIMELINE</h2>
+          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-bottom:40px">SELECT A FRAME — DIRECTOR'S CUT · 2077 PRODUCTION REEL</div>
+        <div style="display:flex;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,0.12);margin-bottom:44px">
+          <sc-for list="{{ scenes }}" as="sn" hint-placeholder-count="6">
+            <button onClick="{{ sn.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:150px;padding:16px 14px 20px;border-top:2px solid {{ sn.topCol }};background:{{ sn.bg }};transition:background 0.3s" style-hover="background:rgba(255,255,255,0.06)">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:{{ sn.codeCol }};margin-bottom:8px">{{ sn.code }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:2px;color:{{ sn.labelCol }}">{{ sn.label }}</div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="position:relative;height:560px;border-radius:18px;border:1px solid rgba(255,255,255,0.14);overflow:hidden;background:#07091a">
+          <div key="{{ scene.id }}" style="position:absolute;inset:0;display:flex;flex-direction:{{ scene.dir }};animation:cmaSceneIn 0.8s ease both">
+            <div style="flex:1.1;position:relative;min-width:0">
+              <img src="{{ scene.img }}" alt="{{ scene.label }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.1) 0 1px,transparent 1px 4px)"></div>
+              <div style="position:absolute;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.14),transparent);animation:cmaScanY 7s linear infinite"></div>
+            </div>
+            <div style="flex:0.9;display:flex;flex-direction:column;justify-content:center;padding:60px;box-sizing:border-box;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent)">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:4px;color:{{ scene.accent }};margin-bottom:20px">FRAME {{ scene.code }} · {{ scene.tag }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:clamp(26px,2.8vw,38px);letter-spacing:3px;line-height:1.3;margin-bottom:22px">{{ scene.headline }}</div>
+              <p style="font-size:14px;font-weight:300;line-height:1.9;color:rgba(232,236,244,0.6);margin:0 0 34px;max-width:420px">{{ scene.sub }}</p>
+              <div style="display:flex;gap:26px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45)">
+                <span>LENS {{ scene.lens }}</span><span>·</span><span>{{ scene.light }}</span><span>·</span><span>REEL 02/07</span>
+              </div>
+            </div>
+          </div>
+          <sc-if value="{{ transitioning }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;z-index:5;background:rgba(4,5,13,0.92);overflow:hidden">
+              <div style="position:absolute;top:0;bottom:0;left:0;width:12%;background:linear-gradient(90deg,transparent,rgba(125,211,252,0.7),rgba(249,168,212,0.5),transparent);filter:blur(6px);animation:cmaBeamX 0.85s ease-in-out both"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:6px;color:rgba(125,211,252,0.8);animation:cmaPulse 0.5s infinite">SWITCHING FRAME ▮▮▮</div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </section>
+
+    <section id="loadout" data-screen-label="Weapon Outfit Switcher" style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:48px">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:{{ accent }}">03 / LOADOUT</div>
+        <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">WEAPON &amp; OUTFIT SWITCHER</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:28px;align-items:start">
+        <div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-bottom:16px">WEAPON SYSTEMS — SELECT ONE</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:38px">
+            <sc-for list="{{ weapons }}" as="w" hint-placeholder-count="6">
+              <button onClick="{{ w.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;border-radius:12px;border:1px solid {{ w.borderCol }};background:{{ w.bg }};padding:18px 20px;transition:all 0.3s;display:block" style-hover="border-color:rgba(255,255,255,0.45);transform:translateY(-3px)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                  <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:2px;color:{{ w.nameCol }}">{{ w.name }}</div>
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:{{ w.tagCol }};border:1px solid {{ w.borderCol }};border-radius:4px;padding:3px 7px">{{ w.tag }}</div>
+                </div>
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1.5px;color:rgba(232,236,244,0.45);margin-bottom:12px">{{ w.sub }}</div>
+                <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden">
+                  <div style="height:100%;width:{{ w.pct }};background:linear-gradient(90deg,{{ accent }},transparent);border-radius:2px"></div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-bottom:16px">OUTFIT PALETTE — REWRITE IDENTITY</div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap">
+            <sc-for list="{{ palettes }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px" style-hover="transform:translateY(-3px)">
+                <span style="width:38px;height:38px;border-radius:50%;background:{{ p.c1 }};box-shadow:{{ p.ring }};transition:box-shadow 0.3s"></span>
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:{{ p.labelCol }}">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="position:sticky;top:110px;border-radius:16px;border:1px solid {{ accentBorder }};background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.45),0 0 46px {{ accentGlow }}">
+          <div style="position:relative;height:280px">
+            <img src="{{ ac.img }}" alt="Loadout preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 22%">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,{{ accentTint }},transparent 45%,rgba(4,5,13,0.92))"></div>
+            <div style="position:absolute;left:0;right:0;height:60px;background:linear-gradient(180deg,transparent,{{ accentSoft }},transparent);animation:cmaScanY 4.5s linear infinite"></div>
+            <div style="position:absolute;bottom:14px;left:18px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:{{ accent }};animation:cmaPulse 1.8s infinite">▮ LOADOUT SYNCED — {{ paletteName }}</div>
+          </div>
+          <div style="padding:26px 28px">
+            <div style="font-family:'Michroma',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:20px;color:{{ accent }}">{{ weaponName }}</div>
+            <div style="display:flex;flex-direction:column;gap:12px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px">
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:11px"><span style="color:rgba(232,236,244,0.4)">PILOT UNIT</span><span>{{ ac.name }}</span></div>
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:11px"><span style="color:rgba(232,236,244,0.4)">OUTPUT</span><span style="color:{{ accent }}">{{ weaponStat }}</span></div>
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:11px"><span style="color:rgba(232,236,244,0.4)">OUTFIT MODE</span><span>{{ paletteName }}</span></div>
+            </div>
+            <p style="font-size:13px;font-weight:300;line-height:1.8;color:rgba(232,236,244,0.6);margin:20px 0 0">{{ weaponDesc }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="showroom" data-screen-label="3D Showroom" style="border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.015)">
+      <div style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+        <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:48px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#7dd3fc">04 / SHOWROOM</div>
+          <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">3D INTERACTIVE SHOWROOM</h2>
+          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:28px;align-items:stretch">
+          <div onMouseDown="{{ stageDown }}" onTouchStart="{{ stageTouch }}" style="position:relative;height:640px;border-radius:18px;border:1px solid rgba(125,211,252,0.25);background:radial-gradient(ellipse at 50% 80%,rgba(125,211,252,0.08),transparent 60%),#060818;overflow:hidden;cursor:grab;user-select:none">
+            <div style="position:absolute;left:50%;bottom:-140px;width:760px;height:760px;transform:translateX(-50%) rotateX(80deg);background-image:linear-gradient(rgba(125,211,252,0.16) 1px,transparent 1px),linear-gradient(90deg,rgba(125,211,252,0.16) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(circle,black,transparent 68%);-webkit-mask-image:radial-gradient(circle,black,transparent 68%)"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1300px">
+              <div ref="{{ stageRef }}" style="position:relative;width:300px;height:460px;transform-style:preserve-3d">
+                <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                  <img src="assets/silver-blueprint.jpeg" alt="Hologram front" style="width:100%;height:100%;object-fit:cover;object-position:68% 45%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.95);mix-blend-mode:screen;display:block">
+                  <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(4,5,13,0.35) 0 2px,transparent 2px 5px)"></div>
+                </div>
+                <div style="position:absolute;inset:0;transform:rotateY(180deg);backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                  <img src="assets/white-android.jpeg" alt="Hologram back" style="width:100%;height:100%;object-fit:cover;object-position:center 78%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.9);mix-blend-mode:screen;display:block;transform:scaleX(-1)">
+                  <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(4,5,13,0.35) 0 2px,transparent 2px 5px)"></div>
+                </div>
+                <sc-for list="{{ hotspots }}" as="hs" hint-placeholder-count="5">
+                  <button onClick="{{ hs.select }}" title="{{ hs.name }}" style="all:unset;box-sizing:border-box;cursor:pointer;position:absolute;top:{{ hs.top }};left:{{ hs.left }};width:16px;height:16px;border-radius:50%;border:1px solid {{ hs.col }};background:{{ hs.fill }};box-shadow:0 0 12px {{ hs.col }};animation:cmaPulse 2s infinite" style-hover="transform:scale(1.5)"></button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="position:absolute;left:50%;bottom:52px;width:380px;height:110px;transform:translateX(-50%);border:1px solid rgba(125,211,252,0.5);border-radius:50%;animation:cmaRingSpin 9s linear infinite;pointer-events:none"></div>
+            <div style="position:absolute;left:50%;bottom:58px;width:290px;height:84px;transform:translateX(-50%);border:1px dashed rgba(249,168,212,0.45);border-radius:50%;animation:cmaRingSpin 14s linear infinite reverse;pointer-events:none"></div>
+            <div style="position:absolute;top:18px;left:20px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(125,211,252,0.75)">HOLO-BAY 04 · SPECIMEN VLK-7</div>
+            <div style="position:absolute;top:18px;right:20px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);animation:cmaPulse 2.4s infinite">◉ REC</div>
+            <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:4px;color:rgba(232,236,244,0.45)">DRAG TO ROTATE — AUTO-ORBIT ENABLED</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ parts }}" as="pt" hint-placeholder-count="5">
+              <button onClick="{{ pt.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:16px;border-radius:12px;border:1px solid {{ pt.borderCol }};border-left:3px solid {{ pt.leftCol }};background:{{ pt.bg }};padding:15px 18px;transition:all 0.3s" style-hover="background:rgba(255,255,255,0.06)">
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:{{ pt.idxCol }}">{{ pt.idx }}</span>
+                <span style="font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:2px;color:{{ pt.nameCol }}">{{ pt.name }}</span>
+              </button>
+            </sc-for>
+            <div key="{{ part.id }}" style="flex:1;border-radius:14px;border:1px solid rgba(125,211,252,0.3);background:rgba(125,211,252,0.04);backdrop-filter:blur(12px);padding:26px;animation:cmaSceneIn 0.5s ease both">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;margin-bottom:10px">COMPONENT SCAN · {{ part.idx }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:17px;letter-spacing:2px;margin-bottom:14px">{{ part.name }}</div>
+              <p style="font-size:13px;font-weight:300;line-height:1.8;color:rgba(232,236,244,0.65);margin:0 0 22px">{{ part.desc }}</p>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:7px"><span>INTEGRITY</span><span style="color:#7dd3fc">{{ part.p1 }}</span></div>
+                  <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08)"><div style="height:100%;width:{{ part.p1 }};background:#7dd3fc;border-radius:2px;box-shadow:0 0 8px #7dd3fc"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:7px"><span>ENERGY OUTPUT</span><span style="color:#f9a8d4">{{ part.p2 }}</span></div>
+                  <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08)"><div style="height:100%;width:{{ part.p2 }};background:#f9a8d4;border-radius:2px;box-shadow:0 0 8px #f9a8d4"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="upload" data-screen-label="Upload Character Lab" style="max-width:1240px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:14px">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#f9a8d4">05 / LAB</div>
+        <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">UPLOAD CHARACTER LAB</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-bottom:44px">UPLOAD YOUR CHARACTER. ENTER THE GALAXY.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch">
+        <div onClick="{{ pickFile }}" onDragOver="{{ dragOver }}" onDrop="{{ dropFile }}" style="border:1px dashed rgba(125,211,252,0.45);border-radius:16px;min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;cursor:pointer;background:rgba(125,211,252,0.02);transition:all 0.3s" style-hover="background:rgba(125,211,252,0.06);border-color:rgba(125,211,252,0.8)">
+          <div style="width:54px;height:54px;border:1px solid rgba(125,211,252,0.6);transform:rotate(45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(125,211,252,0.25)">
+            <span style="transform:rotate(-45deg);color:#7dd3fc;font-size:22px;line-height:1">↥</span>
+          </div>
+          <div style="font-family:'Michroma',sans-serif;font-size:13px;letter-spacing:3px">DROP CHARACTER IMAGE</div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45)">PNG / JPEG — DRAG &amp; DROP OR CLICK TO BROWSE</div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(249,168,212,0.7)">{{ uploadCountLabel }}</div>
+          <input ref="{{ fileRef }}" type="file" accept="image/*" onChange="{{ fileChange }}" style="display:none">
+        </div>
+        <div style="border-radius:16px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);padding:26px;display:flex;flex-direction:column">
+          <sc-if value="{{ noUpload }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;min-height:360px">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:4px;color:rgba(232,236,244,0.35)">AWAITING SPECIMEN</div>
+              <div style="font-size:13px;font-weight:300;color:rgba(232,236,244,0.45);max-width:300px;line-height:1.8">Drop an image to run cinematic analysis: armor palette, mood, suggested weapon, rarity level.</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasUpload }}" hint-placeholder-val="{{ false }}">
+            <div style="position:relative;height:260px;border-radius:12px;overflow:hidden;margin-bottom:22px;border:1px solid rgba(125,211,252,0.35)">
+              <img src="{{ uploadUrl }}" alt="Uploaded character" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0 1px,transparent 1px 4px)"></div>
+              <div style="position:absolute;top:10px;left:10px;width:20px;height:20px;border-top:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+              <div style="position:absolute;top:10px;right:10px;width:20px;height:20px;border-top:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+              <div style="position:absolute;bottom:10px;left:10px;width:20px;height:20px;border-bottom:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+              <div style="position:absolute;bottom:10px;right:10px;width:20px;height:20px;border-bottom:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+              <sc-if value="{{ analyzing }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:0;right:0;height:70px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.4),transparent);animation:cmaScanY 1.4s linear infinite"></div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,5,13,0.35)">
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#7dd3fc;animation:cmaPulse 0.8s infinite">ANALYZING CHARACTER...</div>
+                </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{ analysisDone }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:11px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:1.5px;margin-bottom:20px">
+                <sc-for list="{{ analysisRows }}" as="ar" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px">
+                    <span style="color:rgba(232,236,244,0.4);white-space:nowrap">{{ ar.k }}</span><span style="text-align:right;color:#e8ecf4">{{ ar.v }}</span>
+                  </div>
+                </sc-for>
+                <div style="display:flex;justify-content:space-between;gap:16px;padding-top:4px">
+                  <span style="color:rgba(232,236,244,0.4)">RARITY LEVEL</span><span style="color:#f9a8d4;text-shadow:0 0 12px rgba(249,168,212,0.7)">{{ analysisRarity }}</span>
+                </div>
+              </div>
+              <sc-if value="{{ notAdded }}" hint-placeholder-val="{{ true }}">
+                <div style="padding:1px;border-radius:10px;background:linear-gradient(90deg,#7dd3fc,#f9a8d4,#a78bfa,#7dd3fc);background-size:300% 100%;animation:cmaFlow 4s linear infinite;align-self:flex-start">
+                  <button onClick="{{ addToArchive }}" style="border:none;cursor:pointer;border-radius:9px;background:#070a16;color:#e8ecf4;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:3px;padding:14px 24px" style-hover="background:#0d1226">ADD TO ARCHIVE ▸</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ wasAdded }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:#7dd3fc;animation:cmaPulse 2s infinite">▮ UNIT REGISTERED — SEE CHARACTER ARCHIVE</div>
+              </sc-if>
+            </sc-if>
+          </sc-if>
+        </div>
+      </div>
+    </section>
+
+    <footer data-screen-label="Footer" style="border-top:1px solid rgba(255,255,255,0.08);padding:90px 72px 60px;position:relative;z-index:1">
+      <div style="max-width:1240px;margin:0 auto;text-align:center">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:6px;color:rgba(125,211,252,0.7);margin-bottom:20px">— END OF REEL —</div>
+        <div style="font-family:'Michroma',sans-serif;font-size:clamp(20px,2.4vw,30px);letter-spacing:6px;margin-bottom:44px">CYBER MUSE ARCHIVE</div>
+        <div style="display:flex;justify-content:center;gap:64px;flex-wrap:wrap;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;line-height:2.2;color:rgba(232,236,244,0.45);margin-bottom:44px;text-align:left">
+          <div><div style="color:rgba(232,236,244,0.8);margin-bottom:6px">PRODUCTION</div>DIRECTED BY THE MUSE UNIT<br>ARMOR DESIGN — LUNAR ATELIER<br>SHOT ON ORBITAL STAGE 7</div>
+          <div><div style="color:rgba(232,236,244,0.8);margin-bottom:6px">WORLD</div>SECTOR 07 — OUTER SPIRAL<br>YEAR 2077 · POST-CHROME ERA<br>ALL UNITS ARE CINEMATIC AVATARS</div>
+          <div><div style="color:rgba(232,236,244,0.8);margin-bottom:6px">TRANSMISSION</div>SWITCH ARMOR. REWRITE IDENTITY.<br>EVERY FRAME IS A WEAPONIZED<br>FASHION STATEMENT.</div>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.3)">© 2077 CMA STUDIOS — A CINEMATIC ARCHIVE OF CYBERNETIC MUSES</div>
+      </div>
+    </footer>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="App Mode" style="position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 20px 60px;box-sizing:border-box">
+      <div style="position:relative;width:400px;max-width:100%;height:830px;border-radius:52px;border:1px solid rgba(255,255,255,0.28);background:#05060f;overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,0.7),0 0 80px rgba(125,211,252,0.12),inset 0 0 0 2px rgba(255,255,255,0.05)">
+        <div style="position:absolute;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:16px 28px 10px;background:linear-gradient(180deg,rgba(5,6,15,0.95),transparent);font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;color:rgba(232,236,244,0.75)">
+          <span>20:77</span>
+          <div style="width:110px;height:26px;border-radius:14px;background:#000;border:1px solid rgba(255,255,255,0.12)"></div>
+          <span style="color:#7dd3fc">▮▮▮ 5G</span>
+        </div>
+        <div style="position:absolute;top:0;bottom:76px;left:0;right:0;overflow-y:auto;padding:64px 18px 24px;box-sizing:border-box">
+
+          <sc-if value="{{ tabHome }}" hint-placeholder-val="{{ true }}">
+            <div style="position:relative;height:470px;border-radius:26px;overflow:hidden;border:1px solid rgba(255,255,255,0.18);margin-bottom:18px">
+              <img src="assets/silver-valkyrie.jpeg" alt="Silver Valkyrie" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%">
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,5,13,0.3),transparent 35%,rgba(4,5,13,0.95))"></div>
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.1) 0 1px,transparent 1px 4px)"></div>
+              <div style="position:absolute;left:0;right:0;height:70px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.2),transparent);animation:cmaScanY 5s linear infinite"></div>
+              <div style="position:absolute;bottom:22px;left:22px;right:22px">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;margin-bottom:10px">A CINEMATIC ARCHIVE OF CYBERNETIC MUSES</div>
+                <div style="font-family:'Michroma',sans-serif;font-size:24px;letter-spacing:3px;line-height:1.35;margin-bottom:16px">CYBER MUSE ARCHIVE</div>
+                <button onClick="{{ appGoArchive }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(125,211,252,0.6);background:rgba(125,211,252,0.12);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:3px;padding:13px 22px">ENTER ARCHIVE ▸</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px">
+              <div style="flex:1;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;font-family:ui-monospace,Menlo,monospace"><div style="font-size:18px;letter-spacing:2px">{{ unitCount }}</div><div style="font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-top:5px">UNITS</div></div>
+              <div style="flex:1;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;font-family:ui-monospace,Menlo,monospace"><div style="font-size:18px;letter-spacing:2px">07</div><div style="font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-top:5px">FRAMES</div></div>
+              <div style="flex:1;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;font-family:ui-monospace,Menlo,monospace"><div style="font-size:18px;letter-spacing:2px;color:#7dd3fc">LIVE</div><div style="font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-top:5px">STATUS</div></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabArchive }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">ARCHIVE</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ chars }}" as="ch" hint-placeholder-count="4">
+                <button onClick="{{ ch.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;height:150px;border-radius:20px;overflow:hidden;border:1px solid {{ ch.borderCol }};background:rgba(255,255,255,0.03)">
+                  <div style="position:relative;width:42%;flex:none">
+                    <img src="{{ ch.img }}" alt="{{ ch.name }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%">
+                    <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,#0a0c18)"></div>
+                  </div>
+                  <div style="flex:1;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:7px">
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:{{ ch.accent }}">{{ ch.code }}</div>
+                    <div style="font-family:'Michroma',sans-serif;font-size:13px;letter-spacing:1.5px">{{ ch.name }}</div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:1px;color:rgba(232,236,244,0.5)">{{ ch.armorType }}</div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:1px;color:rgba(232,236,244,0.35)">{{ ch.weapon }}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+            <div key="{{ ac.id }}" style="margin-top:18px;border-radius:20px;border:1px solid {{ ac.accentSoft }};background:rgba(255,255,255,0.03);padding:20px;animation:cmaSceneIn 0.5s ease both">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:3px;color:{{ ac.accent }};margin-bottom:8px">{{ ac.code }} — DOSSIER</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:12px">{{ ac.name }}</div>
+              <p style="font-size:12px;font-weight:300;line-height:1.8;color:rgba(232,236,244,0.65);margin:0">{{ ac.desc }}</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tab3d }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">3D SHOWROOM</div>
+            <div onMouseDown="{{ stageDown }}" onTouchStart="{{ stageTouch }}" style="position:relative;height:440px;border-radius:22px;border:1px solid rgba(125,211,252,0.3);background:radial-gradient(ellipse at 50% 85%,rgba(125,211,252,0.1),transparent 60%),#060818;overflow:hidden;cursor:grab;user-select:none;margin-bottom:16px">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1000px">
+                <div ref="{{ appStageRef }}" style="position:relative;width:210px;height:330px;transform-style:preserve-3d">
+                  <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                    <img src="assets/silver-blueprint.jpeg" alt="Hologram" style="width:100%;height:100%;object-fit:cover;object-position:68% 45%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.95);mix-blend-mode:screen;display:block">
+                    <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(4,5,13,0.35) 0 2px,transparent 2px 5px)"></div>
+                  </div>
+                  <div style="position:absolute;inset:0;transform:rotateY(180deg);backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                    <img src="assets/white-android.jpeg" alt="Hologram back" style="width:100%;height:100%;object-fit:cover;object-position:center 78%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.9);mix-blend-mode:screen;display:block;transform:scaleX(-1)">
+                  </div>
+                </div>
+              </div>
+              <div style="position:absolute;left:50%;bottom:34px;width:250px;height:74px;transform:translateX(-50%);border:1px solid rgba(125,211,252,0.5);border-radius:50%;animation:cmaRingSpin 9s linear infinite;pointer-events:none"></div>
+              <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:3px;color:rgba(232,236,244,0.45)">DRAG TO ROTATE</div>
+            </div>
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px">
+              <sc-for list="{{ parts }}" as="pt" hint-placeholder-count="5">
+                <button onClick="{{ pt.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1.5px;color:{{ pt.nameCol }};border:1px solid {{ pt.borderCol }};border-radius:999px;padding:9px 14px;background:{{ pt.bg }}">{{ pt.name }}</button>
+              </sc-for>
+            </div>
+            <div key="{{ part.id }}" style="border-radius:18px;border:1px solid rgba(125,211,252,0.3);background:rgba(125,211,252,0.05);padding:18px;animation:cmaSceneIn 0.5s ease both">
+              <div style="font-family:'Michroma',sans-serif;font-size:13px;letter-spacing:2px;margin-bottom:10px">{{ part.name }}</div>
+              <p style="font-size:12px;font-weight:300;line-height:1.75;color:rgba(232,236,244,0.65);margin:0">{{ part.desc }}</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabUpload }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">UPLOAD LAB</div>
+            <div onClick="{{ pickFile }}" onDragOver="{{ dragOver }}" onDrop="{{ dropFile }}" style="border:1px dashed rgba(125,211,252,0.5);border-radius:20px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;background:rgba(125,211,252,0.03);margin-bottom:16px">
+              <span style="color:#7dd3fc;font-size:20px">↥</span>
+              <div style="font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:2px">DROP CHARACTER IMAGE</div>
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45)">TAP TO BROWSE — {{ uploadCountLabel }}</div>
+            </div>
+            <sc-if value="{{ hasUpload }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;height:230px;border-radius:16px;overflow:hidden;border:1px solid rgba(125,211,252,0.4);margin-bottom:16px">
+                <img src="{{ uploadUrl }}" alt="Uploaded character" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+                <sc-if value="{{ analyzing }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:0;right:0;height:60px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.4),transparent);animation:cmaScanY 1.4s linear infinite"></div>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,5,13,0.35);font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:#7dd3fc;animation:cmaPulse 0.8s infinite">ANALYZING...</div>
+                </sc-if>
+              </div>
+              <sc-if value="{{ analysisDone }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;display:flex;flex-direction:column;gap:10px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1.5px;margin-bottom:14px">
+                  <sc-for list="{{ analysisRows }}" as="ar" hint-placeholder-count="4">
+                    <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:rgba(232,236,244,0.4)">{{ ar.k }}</span><span style="text-align:right">{{ ar.v }}</span></div>
+                  </sc-for>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:rgba(232,236,244,0.4)">RARITY LEVEL</span><span style="color:#f9a8d4">{{ analysisRarity }}</span></div>
+                </div>
+                <sc-if value="{{ notAdded }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ addToArchive }}" style="cursor:pointer;width:100%;border-radius:12px;border:1px solid rgba(125,211,252,0.6);background:rgba(125,211,252,0.12);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:3px;padding:15px">ADD TO ARCHIVE ▸</button>
+                </sc-if>
+                <sc-if value="{{ wasAdded }}" hint-placeholder-val="{{ false }}">
+                  <div style="text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;animation:cmaPulse 2s infinite">▮ UNIT REGISTERED</div>
+                </sc-if>
+              </sc-if>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ tabProfile }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">PROFILE</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 0 30px">
+              <div style="position:relative;width:110px;height:110px;border-radius:50%;overflow:hidden;border:2px solid rgba(125,211,252,0.5);box-shadow:0 0 34px rgba(125,211,252,0.3)">
+                <img src="assets/white-android.jpeg" alt="Pilot avatar" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%">
+              </div>
+              <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px">PILOT — K.MUSE</div>
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc">CLEARANCE LEVEL 07 · DIRECTOR</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px">
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">UNITS OWNED</span><span>{{ unitCount }}</span></div>
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">FRAMES DIRECTED</span><span>07</span></div>
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">SECTOR</span><span>07 — OUTER SPIRAL</span></div>
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">MEMBERSHIP</span><span style="color:#f9a8d4">CHROME ELITE</span></div>
+            </div>
+          </sc-if>
+
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:76px;display:flex;border-top:1px solid rgba(255,255,255,0.1);background:rgba(5,6,15,0.85);backdrop-filter:blur(16px)">
+          <sc-for list="{{ appTabs }}" as="tb" hint-placeholder-count="5">
+            <button onClick="{{ tb.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative">
+              <span style="position:absolute;top:0;left:25%;right:25%;height:2px;border-radius:2px;background:{{ tb.barCol }}"></span>
+              <span style="font-size:17px;color:{{ tb.col }};line-height:1">{{ tb.glyph }}</span>
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:{{ tb.col }}">{{ tb.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultPalette&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;silver-ice&quot;,&quot;pink-nova&quot;,&quot;black-galaxy&quot;,&quot;white-chrome&quot;],&quot;default&quot;:&quot;silver-ice&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;introEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  state = {
+    mode: 'web',
+    appTab: 'home',
+    showIntro: (this.props.introEnabled ?? true),
+    activeCharId: 'silver-valkyrie',
+    sceneId: 'cover',
+    transitioning: false,
+    weaponId: 'plasma-blade',
+    paletteId: this.props.defaultPalette ?? 'silver-ice',
+    partId: 'core-reactor',
+    uploads: [],
+    analyzing: false,
+    analysis: null,
+    added: false,
+    customChars: []
+  };
+
+  starsRef = React.createRef();
+  stageRef = React.createRef();
+  appStageRef = React.createRef();
+  fileRef = React.createRef();
+
+  CHARS = [
+    { id:'silver-valkyrie', name:'SILVER VALKYRIE', code:'UNIT-01', accent:'#7dd3fc',
+      armorType:'VLK-7 Cryo Chrome Frame', weapon:'Twin-Coil Ion Rifle', core:'Cryogenic Fusion Cell',
+      img:'assets/silver-valkyrie.jpeg', blueprint:'assets/silver-blueprint.jpeg',
+      desc:'Opening-frame heroine of the Outer Spiral reel. Her mirror-chrome plating drops ambient temperature by four degrees in every scene she enters. She never fires first — the neon spinal conduit charges while she decides whether you are worth the shot.',
+      features:['Neon spinal conduit','Zero-K mirror plating','Optic tracking array'] },
+    { id:'pink-nova', name:'PINK NOVA', code:'UNIT-02', accent:'#f9a8d4',
+      armorType:'NV-2 Gloss Impact Suit', weapon:'Plasma Blade · Heart Sequence', core:'Nova Pulse Reactor',
+      img:'assets/pink-nova.jpeg', blueprint:'assets/pink-helmet.jpeg',
+      desc:'Soft silhouette, catastrophic output. The gloss-pink shell reads as couture until the reactor spikes — then the whole frame blooms like a supernova caught on 70mm film. Fan-favorite of the mid-season combat episode.',
+      features:['Gloss impact shell','Heart-sequence ignition','Supernova bloom mode'] },
+    { id:'magazine-android', name:'MAGAZINE ANDROID', code:'UNIT-03', accent:'#e2e8f0',
+      armorType:'Editorial Chrome Series', weapon:'Gaze Protocol · Lens Killer', core:'Cover-Light Capacitor',
+      img:'assets/klapon-cover.jpeg', blueprint:'assets/white-android.jpeg',
+      desc:'She has never lost a cover shoot. Engineered for the front page of every orbital newsstand, her capacitor charges off studio strobes. The red masthead follows her from magazine to magazine like a loyal drone.',
+      features:['Front-page targeting','Strobe-charged core','Masthead drone escort'] },
+    { id:'armor-blueprint', name:'ARMOR BLUEPRINT', code:'UNIT-04', accent:'#a5b4fc',
+      armorType:'Full Teardown Schematic', weapon:'Annotated Arsenal Index', core:'Exploded-View Manifold',
+      img:'assets/silver-blueprint.jpeg', blueprint:'assets/red-robot.jpeg',
+      desc:'The archive page itself — every rivet, coil and actuator of the fleet, exploded and annotated. Analysts claim the notes are printed in a language that does not exist yet. The blueprints update themselves between readings.',
+      features:['Self-updating schematics','Annotated weapon index','Unknown-language notes'] }
+  ];
+
+  SCENES = [
+    { id:'cover', code:'S.01', label:'COVER SHOT', img:'assets/klapon-cover.jpeg', dir:'row', accent:'#f9a8d4', tag:'EDITORIAL',
+      headline:'THE COVER THAT STARES BACK', lens:'85MM F1.2', light:'STUDIO STROBE',
+      sub:'Issue 02 opens on the Magazine Android holding the newsstand hostage. No retouching required — the chrome does it herself.' },
+    { id:'full-body', code:'S.02', label:'FULL BODY ARMOR', img:'assets/silver-blueprint.jpeg', dir:'row-reverse', accent:'#7dd3fc', tag:'SPEC SHEET',
+      headline:'HEAD-TO-TOE CHROME DOCTRINE', lens:'50MM F4.0', light:'FLAT LAB WHITE',
+      sub:'Front and rear elevation of the VLK-7 frame. Every panel line is a decision; every servo is signed by the Lunar Atelier.' },
+    { id:'side-profile', code:'S.03', label:'SIDE PROFILE', img:'assets/pink-helmet.jpeg', dir:'row', accent:'#f9a8d4', tag:'PORTRAIT',
+      headline:'PROFILE OF A SUPERNOVA', lens:'105MM F1.4', light:'SOFT KEY LEFT',
+      sub:'Pink Nova in cross-section — helmet optics, coolant veins, and the quiet second before the heart sequence ignites.' },
+    { id:'weapon-loadout', code:'S.04', label:'WEAPON LOADOUT', img:'assets/red-robot.jpeg', dir:'row-reverse', accent:'#a5b4fc', tag:'ARSENAL',
+      headline:'THE ESCORT NEVER BLINKS', lens:'35MM F2.8', light:'HARD RIM RED',
+      sub:'Sentinel frame at parade rest, internals exposed. The red masthead approves. The safety, as always, is a rumor.' },
+    { id:'combat-ready', code:'S.05', label:'COMBAT READY', img:'assets/silver-valkyrie.jpeg', dir:'row', accent:'#7dd3fc', tag:'ACTION',
+      headline:'FOUR DEGREES COLDER', lens:'ANAMORPHIC 40MM', light:'CRYO BLUE PRACTICAL',
+      sub:'Silver Valkyrie steps into frame and the set frosts over. Rolling. Nobody calls cut.' },
+    { id:'blueprint', code:'S.06', label:'BLUEPRINT ANALYSIS', img:'assets/pink-nova.jpeg', dir:'row-reverse', accent:'#f9a8d4', tag:'TEARDOWN',
+      headline:'ANATOMY OF A FASHION WEAPON', lens:'MACRO 100MM', light:'DOCUMENT SCAN',
+      sub:'Gloss shell peeled back to the pulse reactor. The annotations insist this is outerwear. The output numbers disagree.' }
+  ];
+
+  WEAPONS = [
+    { id:'plasma-blade', name:'PLASMA BLADE', sub:'CLOSE QUARTERS · HEART SEQUENCE', tag:'MELEE', pct:86, stat:'8.6 TW BURST',
+      desc:'A blade of contained sunrise. Cuts through armor plate and awkward silences with equal grace.' },
+    { id:'ion-rifle', name:'ION RIFLE', sub:'TWIN COIL · 2.4KM EFFECTIVE', tag:'RANGED', pct:74, stat:'7.4 TW SUSTAINED',
+      desc:'The Valkyrie signature. Twin coils sing a chord one octave below hearing right before discharge.' },
+    { id:'nano-shield', name:'NANO SHIELD', sub:'ADAPTIVE LATTICE · 360°', tag:'DEFENSE', pct:92, stat:'92% ABSORPTION',
+      desc:'A swarm of mirrored petals that assembles a wall wherever the director frames the shot.' },
+    { id:'wing-booster', name:'WING BOOSTER', sub:'ORBITAL SPRINT · MACH 9', tag:'MOBILITY', pct:81, stat:'MACH 9.1 DASH',
+      desc:'Deployable chrome wings. Strictly speaking not flight — just falling with impeccable styling.' },
+    { id:'stealth-cloak', name:'STEALTH CLOAK', sub:'LIGHT-FOLD WEAVE · GHOST MODE', tag:'COVERT', pct:68, stat:'0.02 LUMEN TRACE',
+      desc:'Folds light around the frame. The camera still finds her — the cloak was never meant for cameras.' },
+    { id:'heavy-armor', name:'HEAVY ARMOR MODE', sub:'SIEGE PLATING · FORTRESS STANCE', tag:'SIEGE', pct:97, stat:'97% MITIGATION',
+      desc:'The couture becomes a cathedral. Movement drops by half; presence roughly triples.' }
+  ];
+
+  PALETTES = [
+    { id:'silver-ice', name:'SILVER ICE', c1:'#7dd3fc' },
+    { id:'pink-nova', name:'PINK NOVA', c1:'#f9a8d4' },
+    { id:'black-galaxy', name:'BLACK GALAXY', c1:'#a78bfa' },
+    { id:'white-chrome', name:'WHITE CHROME', c1:'#e2e8f0' }
+  ];
+
+  PARTS = [
+    { id:'neural-helmet', idx:'P.01', name:'NEURAL HELMET', p1:'96%', p2:'71%', top:'4%', left:'46%',
+      desc:'Full-spectrum optic array with a 900ms precognition buffer. She sees the frame before the camera does.' },
+    { id:'core-reactor', idx:'P.02', name:'CORE REACTOR', p1:'98%', p2:'94%', top:'30%', left:'50%',
+      desc:'Cryogenic fusion cell rated for eleven years of continuous performance, or one very dramatic finale.' },
+    { id:'shoulder-armor', idx:'P.03', name:'SHOULDER ARMOR', p1:'89%', p2:'62%', top:'22%', left:'16%',
+      desc:'Layered chrome pauldrons with kinetic dispersion channels. Doubles as the best silhouette in the sector.' },
+    { id:'arm-weapon', idx:'P.04', name:'ARM WEAPON', p1:'84%', p2:'88%', top:'48%', left:'80%',
+      desc:'Modular forearm hardpoint. Accepts blade, rifle or shield emitter — swaps mid-scene without a cut.' },
+    { id:'leg-booster', idx:'P.05', name:'LEG BOOSTER', p1:'91%', p2:'79%', top:'78%', left:'38%',
+      desc:'Vector thrusters woven into the calf plating. Zero-to-orbit in one continuous tracking shot.' }
+  ];
+
+  componentDidMount() {
+    if (this.state.showIntro) {
+      this._introT = setTimeout(() => this.setState({ showIntro: false }), 3000);
+    }
+    // starfield
+    const canvas = this.starsRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const resize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
+      resize();
+      this._onResize = resize;
+      addEventListener('resize', resize);
+      this._stars = Array.from({ length: 170 }, () => ({
+        x: Math.random(), y: Math.random(), r: Math.random() * 1.4 + 0.3,
+        s: Math.random() * 0.008 + 0.002, ph: Math.random() * Math.PI * 2,
+        hue: Math.random() < 0.75 ? '210' : '320'
+      }));
+      this._ctx = ctx;
+    }
+    // rotation + stars loop
+    this._rot = -18; this._dragging = false; this._t = 0;
+    const loop = () => {
+      this._t += 0.016;
+      if (!this._dragging && (this.props.autoRotate ?? true)) this._rot += 0.18;
+      const tf = 'rotateY(' + this._rot + 'deg)';
+      if (this.stageRef.current) this.stageRef.current.style.transform = tf;
+      if (this.appStageRef.current) this.appStageRef.current.style.transform = tf;
+      const ctx = this._ctx, cv = this.starsRef.current;
+      if (ctx && cv) {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        for (const st of this._stars) {
+          st.y += st.s * 0.06; if (st.y > 1) st.y = 0;
+          const a = 0.25 + 0.55 * Math.abs(Math.sin(this._t * 0.7 + st.ph));
+          ctx.beginPath();
+          ctx.arc(st.x * cv.width, st.y * cv.height, st.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'hsla(' + st.hue + ',85%,80%,' + a.toFixed(2) + ')';
+          ctx.fill();
+        }
+      }
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+    // drag listeners
+    this._mm = (e) => { if (this._dragging) this._rot = this._base + (e.clientX - this._sx) * 0.5; };
+    this._mu = () => { this._dragging = false; };
+    this._tm = (e) => { if (this._dragging && e.touches[0]) this._rot = this._base + (e.touches[0].clientX - this._sx) * 0.5; };
+    addEventListener('mousemove', this._mm);
+    addEventListener('mouseup', this._mu);
+    addEventListener('touchmove', this._tm);
+    addEventListener('touchend', this._mu);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._introT); clearTimeout(this._anT); clearTimeout(this._sc1); clearTimeout(this._sc2);
+    cancelAnimationFrame(this._raf);
+    removeEventListener('resize', this._onResize);
+    removeEventListener('mousemove', this._mm);
+    removeEventListener('mouseup', this._mu);
+    removeEventListener('touchmove', this._tm);
+    removeEventListener('touchend', this._mu);
+  }
+
+  scrollTo(id) {
+    const el = document.getElementById(id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' });
+  }
+
+  selectScene(id) {
+    if (id === this.state.sceneId || this.state.transitioning) return;
+    this.setState({ transitioning: true });
+    this._sc1 = setTimeout(() => this.setState({ sceneId: id }), 430);
+    this._sc2 = setTimeout(() => this.setState({ transitioning: false }), 900);
+  }
+
+  handleFiles(files) {
+    const f = files && files[0];
+    if (!f || !f.type || f.type.indexOf('image') !== 0) return;
+    const url = URL.createObjectURL(f);
+    const h = (f.name + f.size).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const moods = ['Cold Precision', 'Soft Rebellion', 'Lunar Melancholy', 'Neon Devotion', 'Chrome Serenity'];
+    const roles = ['Opening Frame Heroine', 'Blueprint Oracle', 'Final Act Duelist', 'Cover Muse', 'Silent Sentinel'];
+    const pals = ['Silver Ice — chrome / cyan', 'Pink Nova — gloss / rose', 'Black Galaxy — void / violet', 'White Chrome — pearl / steel'];
+    const rars = ['SR — LIMITED FRAME', 'SSR — PROTOTYPE', 'UR — ONE OF ONE'];
+    const analysis = {
+      palette: pals[h % pals.length],
+      mood: moods[h % moods.length],
+      weapon: this.WEAPONS[h % this.WEAPONS.length].name,
+      role: roles[h % roles.length],
+      rarity: rars[h % rars.length]
+    };
+    this.setState({ uploads: [...this.state.uploads, { url, name: f.name }], analyzing: true, analysis: null, added: false });
+    clearTimeout(this._anT);
+    this._anT = setTimeout(() => this.setState({ analyzing: false, analysis }), 2200);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const isWeb = s.mode === 'web', isApp = s.mode === 'app';
+    const dim = 'rgba(232,236,244,0.55)';
+
+    const allChars = [...this.CHARS, ...s.customChars];
+    const chars = allChars.map(c => ({
+      ...c,
+      select: () => this.setState({ activeCharId: c.id }),
+      borderCol: s.activeCharId === c.id ? c.accent : 'rgba(255,255,255,0.12)',
+      glow: c.accent + '44',
+      dotCol: s.activeCharId === c.id ? c.accent : 'rgba(255,255,255,0.18)'
+    }));
+    const acBase = allChars.find(c => c.id === s.activeCharId) || allChars[0];
+    const ac = { ...acBase, accentSoft: acBase.accent + '55' };
+    const acRows = [
+      { k: 'CHARACTER NAME', v: ac.name },
+      { k: 'ARMOR TYPE', v: ac.armorType },
+      { k: 'WEAPON SYSTEM', v: ac.weapon },
+      { k: 'ENERGY CORE', v: ac.core }
+    ];
+
+    const scenes = this.SCENES.map(sc => {
+      const active = sc.id === s.sceneId;
+      return { ...sc,
+        select: () => this.selectScene(sc.id),
+        topCol: active ? sc.accent : 'transparent',
+        bg: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+        codeCol: active ? sc.accent : 'rgba(232,236,244,0.35)',
+        labelCol: active ? '#e8ecf4' : 'rgba(232,236,244,0.45)'
+      };
+    });
+    const scene = this.SCENES.find(sc => sc.id === s.sceneId) || this.SCENES[0];
+
+    const pal = this.PALETTES.find(p => p.id === s.paletteId) || this.PALETTES[0];
+    const accent = pal.c1;
+    const palettes = this.PALETTES.map(p => ({ ...p,
+      select: () => this.setState({ paletteId: p.id }),
+      ring: p.id === s.paletteId ? '0 0 0 3px #04050d, 0 0 0 5px ' + p.c1 + ', 0 0 22px ' + p.c1 : '0 0 0 1px rgba(255,255,255,0.25)',
+      labelCol: p.id === s.paletteId ? p.c1 : dim
+    }));
+
+    const weapons = this.WEAPONS.map(w => {
+      const active = w.id === s.weaponId;
+      return { ...w,
+        select: () => this.setState({ weaponId: w.id }),
+        borderCol: active ? accent : 'rgba(255,255,255,0.12)',
+        bg: active ? accent.replace(')', '') && (accent + '14') : 'rgba(255,255,255,0.02)',
+        nameCol: active ? accent : '#e8ecf4',
+        tagCol: active ? accent : 'rgba(232,236,244,0.4)',
+        pct: w.pct + '%'
+      };
+    });
+    const wp = this.WEAPONS.find(w => w.id === s.weaponId) || this.WEAPONS[0];
+
+    const parts = this.PARTS.map(p => {
+      const active = p.id === s.partId;
+      return { ...p,
+        select: () => this.setState({ partId: p.id }),
+        borderCol: active ? 'rgba(125,211,252,0.5)' : 'rgba(255,255,255,0.1)',
+        leftCol: active ? '#7dd3fc' : 'rgba(255,255,255,0.15)',
+        bg: active ? 'rgba(125,211,252,0.08)' : 'rgba(255,255,255,0.02)',
+        idxCol: active ? '#7dd3fc' : 'rgba(232,236,244,0.35)',
+        nameCol: active ? '#e8ecf4' : 'rgba(232,236,244,0.55)'
+      };
+    });
+    const part = this.PARTS.find(p => p.id === s.partId) || this.PARTS[0];
+    const hotspots = this.PARTS.map(p => ({ ...p,
+      select: () => this.setState({ partId: p.id }),
+      col: p.id === s.partId ? '#f9a8d4' : '#7dd3fc',
+      fill: p.id === s.partId ? 'rgba(249,168,212,0.5)' : 'rgba(125,211,252,0.25)'
+    }));
+
+    const lastUpload = s.uploads[s.uploads.length - 1];
+    const analysisRows = s.analysis ? [
+      { k: 'ARMOR COLOR PALETTE', v: s.analysis.palette },
+      { k: 'CHARACTER MOOD', v: s.analysis.mood },
+      { k: 'SUGGESTED WEAPON', v: s.analysis.weapon },
+      { k: 'CINEMATIC ROLE', v: s.analysis.role }
+    ] : [];
+
+    const TABS = [
+      { id: 'home', label: 'HOME', glyph: '⌂' },
+      { id: 'archive', label: 'ARCHIVE', glyph: '▦' },
+      { id: '3d', label: '3D', glyph: '◇' },
+      { id: 'upload', label: 'UPLOAD', glyph: '↥' },
+      { id: 'profile', label: 'PROFILE', glyph: '◉' }
+    ];
+    const appTabs = TABS.map(t => ({ ...t,
+      select: () => this.setState({ appTab: t.id }),
+      col: s.appTab === t.id ? '#7dd3fc' : 'rgba(232,236,244,0.4)',
+      barCol: s.appTab === t.id ? '#7dd3fc' : 'transparent'
+    }));
+
+    return {
+      starsRef: this.starsRef, stageRef: this.stageRef, appStageRef: this.appStageRef, fileRef: this.fileRef,
+      showIntro: s.showIntro,
+      isWeb, isApp,
+      modeBtns: [
+        { label: 'WEB', select: () => this.setState({ mode: 'web' }), bg: isWeb ? 'rgba(125,211,252,0.2)' : 'transparent', col: isWeb ? '#7dd3fc' : 'rgba(232,236,244,0.5)' },
+        { label: 'APP', select: () => this.setState({ mode: 'app' }), bg: isApp ? 'rgba(249,168,212,0.2)' : 'transparent', col: isApp ? '#f9a8d4' : 'rgba(232,236,244,0.5)' }
+      ],
+      navItems: [
+        { label: 'ARCHIVE', go: () => this.scrollTo('archive') },
+        { label: 'STORYBOARD', go: () => this.scrollTo('storyboard') },
+        { label: 'LOADOUT', go: () => this.scrollTo('loadout') },
+        { label: 'SHOWROOM', go: () => this.scrollTo('showroom') },
+        { label: 'UPLOAD', go: () => this.scrollTo('upload') }
+      ],
+      goTop: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+      goArchive: () => this.scrollTo('archive'),
+      goShowroom: () => this.scrollTo('showroom'),
+      goUpload: () => this.scrollTo('upload'),
+      chars, ac, acRows, acFeatures: ac.features,
+      scenes, scene, transitioning: s.transitioning,
+      weapons, palettes,
+      accent, accentSoft: accent + '44', accentBorder: accent + '66', accentGlow: accent + '22', accentTint: accent + '26',
+      weaponName: wp.name, weaponDesc: wp.desc, weaponStat: wp.stat, paletteName: pal.name,
+      parts, part, hotspots,
+      stageDown: (e) => { this._dragging = true; this._sx = e.clientX; this._base = this._rot; },
+      stageTouch: (e) => { if (e.touches[0]) { this._dragging = true; this._sx = e.touches[0].clientX; this._base = this._rot; } },
+      pickFile: () => { if (this.fileRef.current) this.fileRef.current.click(); },
+      dragOver: (e) => e.preventDefault(),
+      dropFile: (e) => { e.preventDefault(); e.stopPropagation(); this.handleFiles(e.dataTransfer.files); },
+      fileChange: (e) => this.handleFiles(e.target.files),
+      hasUpload: !!lastUpload, noUpload: !lastUpload,
+      uploadUrl: lastUpload ? lastUpload.url : '',
+      uploadCountLabel: s.uploads.length ? s.uploads.length + ' SPECIMEN(S) RECEIVED' : 'ARCHIVE SLOT AVAILABLE',
+      analyzing: s.analyzing,
+      analysisDone: !!s.analysis && !s.analyzing,
+      analysisRows, analysisRarity: s.analysis ? s.analysis.rarity : '',
+      notAdded: !s.added, wasAdded: s.added,
+      addToArchive: () => {
+        if (!lastUpload || !s.analysis) return;
+        const n = s.customChars.length + 1;
+        const nc = {
+          id: 'custom-' + Date.now(), name: 'CUSTOM MUSE 0' + n, code: 'UNIT-0' + (4 + n),
+          accent: accent, armorType: s.analysis.palette, weapon: s.analysis.weapon,
+          core: 'Unclassified Core', img: lastUpload.url, blueprint: lastUpload.url,
+          desc: 'Uploaded via the Character Lab. ' + s.analysis.mood + ' registered on first scan. Assigned cinematic role: ' + s.analysis.role.toLowerCase() + '. Rarity ' + s.analysis.rarity + '.',
+          features: [s.analysis.mood, s.analysis.role, s.analysis.rarity]
+        };
+        this.setState({ customChars: [...s.customChars, nc], activeCharId: nc.id, added: true });
+        if (isWeb) this.scrollTo('archive');
+      },
+      unitCount: '0' + allChars.length,
+      appGoArchive: () => this.setState({ appTab: 'archive' }),
+      tabHome: isApp && s.appTab === 'home',
+      tabArchive: isApp && s.appTab === 'archive',
+      tab3d: isApp && s.appTab === '3d',
+      tabUpload: isApp && s.appTab === 'upload',
+      tabProfile: isApp && s.appTab === 'profile'
+    };
+  }
+}
+</script>
+</body>
+</html>

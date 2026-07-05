@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif; }
+::selection { background: rgba(125, 211, 252, 0.35); }

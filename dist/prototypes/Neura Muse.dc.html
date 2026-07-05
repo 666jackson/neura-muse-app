@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#04050d;}
+::selection{background:rgba(125,211,252,0.35);}
+input,textarea{outline:none}
+@keyframes cmaFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes cmaScanY{0%{top:-25%}100%{top:120%}}
+@keyframes cmaPulse{0%,100%{opacity:1}50%{opacity:0.35}}
+@keyframes cmaFlow{0%{background-position:0% 50%}100%{background-position:300% 50%}}
+@keyframes cmaSceneIn{0%{opacity:0;transform:scale(1.04);filter:blur(6px)}100%{opacity:1;transform:scale(1);filter:blur(0)}}
+@keyframes cmaBeamX{0%{transform:translateX(-120%) skewX(-12deg)}100%{transform:translateX(1400%) skewX(-12deg)}}
+@keyframes cmaFadeUp{0%{opacity:0;transform:translateY(18px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes cmaIntroFade{0%,72%{opacity:1}100%{opacity:0}}
+@keyframes cmaIntroBar{0%{width:0%}70%{width:82%}100%{width:100%}}
+@keyframes cmaRingSpin{0%{transform:rotateX(76deg) rotate(0deg)}100%{transform:rotateX(76deg) rotate(360deg)}}
+@keyframes cmaHoloFlicker{0%,100%{opacity:0.92}92%{opacity:0.92}94%{opacity:0.45}96%{opacity:0.9}98%{opacity:0.6}}
+@keyframes cmaGlitchA{0%,93%{clip-path:inset(100% 0 0 0);transform:translateX(0)}94%{clip-path:inset(18% 0 62% 0);transform:translateX(-5px)}96%{clip-path:inset(58% 0 12% 0);transform:translateX(5px)}98%{clip-path:inset(8% 0 82% 0);transform:translateX(-3px)}100%{clip-path:inset(100% 0 0 0);transform:translateX(0)}}
+@keyframes cmaGlitchB{0%,90%{clip-path:inset(100% 0 0 0);transform:translateX(0)}91%{clip-path:inset(70% 0 8% 0);transform:translateX(4px)}93%{clip-path:inset(28% 0 52% 0);transform:translateX(-5px)}95%{clip-path:inset(85% 0 4% 0);transform:translateX(2px)}100%{clip-path:inset(100% 0 0 0);transform:translateX(0)}}
+@keyframes cmaKenBurns{0%{transform:scale(1.04)}100%{transform:scale(1.16)}}
+@keyframes cmaPoseSlide{0%{opacity:0;transform:translateX(26px);filter:blur(4px)}12%{opacity:1;transform:translateX(0);filter:blur(0)}100%{opacity:1;transform:translateX(0)}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#04050d;color:#e8ecf4;font-family:'Space Grotesk','Noto Sans TC',sans-serif;overflow-x:hidden;position:relative">
+
+  <canvas ref="{{ starsRef }}" style="position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
+  <div style="position:fixed;top:-20%;left:-10%;width:60vw;height:60vw;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,0.13),transparent 65%);z-index:0;pointer-events:none"></div>
+  <div style="position:fixed;bottom:-25%;right:-15%;width:70vw;height:70vw;border-radius:50%;background:radial-gradient(circle,rgba(236,72,153,0.09),transparent 65%);z-index:0;pointer-events:none"></div>
+
+  <sc-if value="{{ showIntro }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;z-index:100;background:#04050d;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;animation:cmaIntroFade 3s ease forwards;pointer-events:none">
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:6px;color:rgba(125,211,252,0.8)">INITIALIZING ARCHIVE — SECTOR 07</div>
+      <div style="font-family:'Michroma',sans-serif;font-size:clamp(24px,4vw,44px);letter-spacing:8px;text-align:center">NEURA MUSE</div>
+      <div style="width:280px;height:1px;background:rgba(255,255,255,0.12);position:relative;overflow:hidden">
+        <div style="position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#7dd3fc,#f9a8d4);animation:cmaIntroBar 2.2s ease forwards"></div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4)">DECRYPTING CHARACTER FRAMES ▮▮▮</div>
+    </div>
+  </sc-if>
+
+  <header data-screen-label="Header" style="position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 32px;background:rgba(4,5,13,0.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid rgba(255,255,255,0.08)">
+    <div style="display:flex;align-items:center;gap:14px;cursor:pointer" onClick="{{ goHome }}">
+      <div style="width:12px;height:12px;background:linear-gradient(135deg,#7dd3fc,#f9a8d4);transform:rotate(45deg);box-shadow:0 0 14px rgba(125,211,252,0.8)"></div>
+      <div>
+        <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:4px">NEURA MUSE</div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-top:3px">{{ t.tagline }}</div>
+      </div>
+    </div>
+    <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+      <nav style="display:flex;gap:22px">
+        <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="6">
+          <button onClick="{{ nv.go }}" style="background:none;border:none;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2.5px;color:{{ nv.col }};padding:6px 0" style-hover="color:#7dd3fc;text-shadow:0 0 12px rgba(125,211,252,0.6)">{{ nv.label }}</button>
+        </sc-for>
+      </nav>
+    </sc-if>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button onClick="{{ toggleLang }}" style="cursor:pointer;border:1px solid rgba(255,255,255,0.18);border-radius:999px;background:rgba(255,255,255,0.04);color:#e8ecf4;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;padding:8px 15px" style-hover="border-color:rgba(125,211,252,0.6);color:#7dd3fc">{{ langLabel }}</button>
+      <div style="display:flex;border:1px solid rgba(255,255,255,0.18);border-radius:999px;padding:3px;gap:3px;background:rgba(255,255,255,0.04)">
+        <sc-for list="{{ modeBtns }}" as="mb" hint-placeholder-count="2">
+          <button onClick="{{ mb.select }}" style="border:none;cursor:pointer;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;padding:7px 14px;border-radius:999px;background:{{ mb.bg }};color:{{ mb.col }};transition:all 0.3s">{{ mb.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ ADMIN VIEW ============ -->
+  <sc-if value="{{ isAdminView }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Admin" style="position:relative;z-index:1;min-height:100vh;max-width:1240px;margin:0 auto;padding:130px 48px 80px;box-sizing:border-box">
+
+      <sc-if value="{{ notAuthed }}" hint-placeholder-val="{{ true }}">
+        <div style="max-width:420px;margin:60px auto 0;border:1px solid rgba(125,211,252,0.3);border-radius:18px;background:rgba(255,255,255,0.03);backdrop-filter:blur(16px);padding:44px 40px;animation:cmaSceneIn 0.6s ease both">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:4px;color:#7dd3fc;margin-bottom:14px">/ADMIN/LOGIN — RESTRICTED</div>
+          <div style="font-family:'Michroma',sans-serif;font-size:20px;letter-spacing:3px;margin-bottom:8px">{{ t.adminTitle }}</div>
+          <p style="font-size:12px;font-weight:300;color:rgba(232,236,244,0.5);line-height:1.8;margin:0 0 26px">{{ t.adminSub }}</p>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-bottom:8px">{{ t.password }}</div>
+          <input type="password" value="{{ loginPw }}" onChange="{{ setLoginPw }}" onKeyDown="{{ loginKey }}" placeholder="••••••••" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.18);border-radius:10px;color:#e8ecf4;font-family:ui-monospace,Menlo,monospace;font-size:13px;letter-spacing:3px;padding:14px 16px;margin-bottom:14px" style-focus="border-color:#7dd3fc;box-shadow:0 0 18px rgba(125,211,252,0.25)">
+          <sc-if value="{{ loginErr }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:#fb7185;margin-bottom:14px">▮ {{ t.wrongPw }}</div>
+          </sc-if>
+          <div style="padding:1px;border-radius:10px;background:linear-gradient(90deg,#7dd3fc,#f9a8d4,#a78bfa,#7dd3fc);background-size:300% 100%;animation:cmaFlow 4s linear infinite">
+            <button onClick="{{ doLogin }}" style="width:100%;border:none;cursor:pointer;border-radius:9px;background:#070a16;color:#e8ecf4;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:15px" style-hover="background:#0d1226">{{ t.signIn }}</button>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.3);margin-top:18px;text-align:center">DEMO ACCESS CODE: muse2077</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ authed }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:36px;flex-wrap:wrap">
+          <div>
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:4px;color:#7dd3fc;margin-bottom:10px">/ADMIN/DASHBOARD</div>
+            <div style="font-family:'Michroma',sans-serif;font-size:24px;letter-spacing:3px">{{ t.dashTitle }}</div>
+          </div>
+          <div style="display:flex;gap:12px">
+            <button onClick="{{ newChar }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(125,211,252,0.5);background:rgba(125,211,252,0.1);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:2px;padding:13px 20px" style-hover="background:rgba(125,211,252,0.2)">+ {{ t.newChar }}</button>
+            <button onClick="{{ doLogout }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(255,255,255,0.18);background:transparent;color:rgba(232,236,244,0.6);font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;padding:13px 18px" style-hover="border-color:#fb7185;color:#fb7185">{{ t.logout }}</button>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:{{ dashCols }};gap:24px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ adminRows }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:16px;border:1px solid {{ r.borderCol }};border-radius:14px;background:rgba(255,255,255,0.03);padding:12px 16px">
+                <div style="width:52px;height:64px;border-radius:8px;overflow:hidden;flex:none;border:1px solid rgba(255,255,255,0.12)">
+                  <img src="{{ r.img }}" alt="{{ r.name }}" style="width:100%;height:100%;object-fit:cover;object-position:center 20%">
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:1.5px;margin-bottom:5px">{{ r.name }}</div>
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1px;color:rgba(232,236,244,0.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.code }} · {{ r.armorType }}</div>
+                </div>
+                <button onClick="{{ r.togglePublic }}" style="cursor:pointer;flex:none;border:1px solid {{ r.pubBorder }};border-radius:999px;background:{{ r.pubBg }};color:{{ r.pubCol }};font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;padding:6px 12px">{{ r.pubLabel }}</button>
+                <button onClick="{{ r.edit }}" style="cursor:pointer;flex:none;border:1px solid rgba(125,211,252,0.4);border-radius:8px;background:transparent;color:#7dd3fc;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;padding:8px 13px" style-hover="background:rgba(125,211,252,0.12)">{{ t.edit }}</button>
+                <button onClick="{{ r.remove }}" style="cursor:pointer;flex:none;border:1px solid rgba(251,113,133,0.35);border-radius:8px;background:transparent;color:#fb7185;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;padding:8px 13px" style-hover="background:rgba(251,113,133,0.12)">✕</button>
+              </div>
+            </sc-for>
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.35);padding:8px 4px">{{ t.dashNote }}</div>
+          </div>
+
+          <sc-if value="{{ isEditing }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid rgba(249,168,212,0.35);border-radius:16px;background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);padding:28px;animation:cmaSceneIn 0.4s ease both">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#f9a8d4;margin-bottom:18px">{{ editHeading }}</div>
+              <div style="display:flex;gap:16px;margin-bottom:18px">
+                <div onClick="{{ pickFormImg }}" style="width:96px;height:120px;border-radius:10px;overflow:hidden;border:1px dashed rgba(125,211,252,0.5);cursor:pointer;position:relative;flex:none;background:rgba(125,211,252,0.04)">
+                  <sc-if value="{{ formHasImg }}" hint-placeholder-val="{{ false }}">
+                    <img src="{{ formImg }}" alt="cover" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+                  </sc-if>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;color:#7dd3fc;background:rgba(4,5,13,0.25)">↥</div>
+                  <input ref="{{ formFileRef }}" type="file" accept="image/*" onChange="{{ formImgChange }}" style="display:none">
+                </div>
+                <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+                  <div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:5px">{{ t.fName }}</div>
+                    <input value="{{ formName }}" onChange="{{ setFormName }}" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#e8ecf4;font-size:12px;padding:10px 12px" style-focus="border-color:#f9a8d4">
+                  </div>
+                  <div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:5px">{{ t.fArmor }}</div>
+                    <input value="{{ formArmor }}" onChange="{{ setFormArmor }}" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#e8ecf4;font-size:12px;padding:10px 12px" style-focus="border-color:#f9a8d4">
+                  </div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+                <div>
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:5px">{{ t.fWeapon }}</div>
+                  <input value="{{ formWeapon }}" onChange="{{ setFormWeapon }}" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#e8ecf4;font-size:12px;padding:10px 12px" style-focus="border-color:#f9a8d4">
+                </div>
+                <div>
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:5px">{{ t.fCore }}</div>
+                  <input value="{{ formCore }}" onChange="{{ setFormCore }}" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#e8ecf4;font-size:12px;padding:10px 12px" style-focus="border-color:#f9a8d4">
+                </div>
+              </div>
+              <div style="margin-bottom:14px">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:5px">{{ t.fDescEn }}</div>
+                <textarea value="{{ formDesc }}" onChange="{{ setFormDesc }}" rows="3" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#e8ecf4;font-size:12px;padding:10px 12px;resize:vertical;font-family:inherit" style-focus="border-color:#f9a8d4"></textarea>
+              </div>
+              <div style="margin-bottom:16px">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:5px">{{ t.fDescZh }}</div>
+                <textarea value="{{ formDescZh }}" onChange="{{ setFormDescZh }}" rows="3" style="width:100%;box-sizing:border-box;background:rgba(4,5,13,0.7);border:1px solid rgba(255,255,255,0.15);border-radius:8px;color:#e8ecf4;font-size:12px;padding:10px 12px;resize:vertical;font-family:inherit" style-focus="border-color:#f9a8d4"></textarea>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45)">{{ t.fTheme }}</div>
+                <sc-for list="{{ formAccents }}" as="fa" hint-placeholder-count="4">
+                  <button onClick="{{ fa.select }}" style="all:unset;cursor:pointer;width:24px;height:24px;border-radius:50%;background:{{ fa.c }};box-shadow:{{ fa.ring }}"></button>
+                </sc-for>
+                <div style="flex:1"></div>
+                <button onClick="{{ toggleFormPublic }}" style="cursor:pointer;border:1px solid {{ formPubBorder }};border-radius:999px;background:{{ formPubBg }};color:{{ formPubCol }};font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;padding:8px 15px">{{ formPubLabel }}</button>
+              </div>
+              <div style="display:flex;gap:12px">
+                <button onClick="{{ saveChar }}" style="flex:1;cursor:pointer;border-radius:10px;border:none;background:linear-gradient(90deg,#7dd3fc,#f9a8d4);color:#04050d;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:14px;font-weight:600">{{ t.save }}</button>
+                <button onClick="{{ cancelEdit }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:rgba(232,236,244,0.6);font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;padding:14px 20px">{{ t.cancel }}</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ============ WEB SITE VIEW ============ -->
+  <sc-if value="{{ isWebSite }}" hint-placeholder-val="{{ true }}">
+  <main style="position:relative;z-index:1">
+
+    <section id="home" data-screen-label="Hero" style="min-height:100vh;max-width:1440px;margin:0 auto;display:grid;grid-template-columns:1.1fr 0.9fr;align-items:center;gap:56px;padding:150px 72px 90px;box-sizing:border-box">
+      <div style="animation:cmaFadeUp 1.2s ease both">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:5px;color:#7dd3fc;margin-bottom:26px;display:flex;align-items:center;gap:12px">
+          <span style="display:inline-block;width:40px;height:1px;background:#7dd3fc"></span>
+          {{ t.heroEyebrow }}
+        </div>
+        <h1 style="position:relative;font-family:'Michroma',sans-serif;font-size:clamp(44px,5.2vw,76px);line-height:1.14;letter-spacing:4px;margin:0 0 30px;font-weight:400">
+          <span style="position:relative;z-index:2">NEURA MUSE</span>
+          <span aria-hidden="true" style="position:absolute;inset:0;color:#7dd3fc;z-index:1;animation:cmaGlitchA 3.4s steps(1) infinite">NEURA MUSE</span>
+          <span aria-hidden="true" style="position:absolute;inset:0;color:#f9a8d4;z-index:1;animation:cmaGlitchB 2.9s steps(1) infinite">NEURA MUSE</span>
+        </h1>
+        <p style="max-width:480px;font-size:15px;font-weight:300;line-height:1.9;color:rgba(232,236,244,0.6);margin:0 0 40px">{{ t.heroDesc }}</p>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:52px">
+          <div style="padding:1px;border-radius:10px;background:linear-gradient(90deg,#7dd3fc,#f9a8d4,#a78bfa,#7dd3fc);background-size:300% 100%;animation:cmaFlow 4s linear infinite">
+            <button onClick="{{ goArchive }}" style="border:none;cursor:pointer;border-radius:9px;background:#070a16;color:#e8ecf4;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:16px 28px" style-hover="background:#0d1226">{{ t.ctaEnter }}</button>
+          </div>
+          <button onClick="{{ goShowroom }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(125,211,252,0.45);background:rgba(125,211,252,0.06);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:16px 28px" style-hover="background:rgba(125,211,252,0.16);box-shadow:0 0 24px rgba(125,211,252,0.3)">{{ t.cta3d }}</button>
+          <button onClick="{{ goUpload }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(249,168,212,0.45);background:rgba(249,168,212,0.06);color:#f9a8d4;font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:3px;padding:16px 28px" style-hover="background:rgba(249,168,212,0.16);box-shadow:0 0 24px rgba(249,168,212,0.3)">{{ t.ctaUpload }}</button>
+        </div>
+        <div style="display:flex;gap:44px;font-family:ui-monospace,Menlo,monospace">
+          <div><div style="font-size:22px;color:#e8ecf4;letter-spacing:2px">{{ unitCount }}</div><div style="font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-top:5px">{{ t.statUnits }}</div></div>
+          <div><div style="font-size:22px;color:#e8ecf4;letter-spacing:2px">07</div><div style="font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-top:5px">{{ t.statFrames }}</div></div>
+          <div><div style="font-size:22px;color:#7dd3fc;letter-spacing:2px;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#7dd3fc;box-shadow:0 0 10px #7dd3fc;animation:cmaPulse 1.6s infinite"></span>LIVE</div><div style="font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-top:5px">{{ t.statStatus }}</div></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center">
+        <div style="position:relative;width:min(420px,100%);aspect-ratio:3/4;border-radius:18px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;animation:cmaFloat 7s ease-in-out infinite;box-shadow:0 40px 90px rgba(0,0,0,0.6),0 0 60px rgba(125,211,252,0.18)">
+          <div key="{{ heroFrame.id }}" style="position:absolute;inset:0;animation:cmaSceneIn 0.9s ease both">
+            <img src="{{ heroFrame.img }}" alt="{{ heroFrame.label }}" style="width:100%;height:100%;object-fit:cover;object-position:{{ heroFrame.pos }};display:block;animation:cmaKenBurns 5s ease-out both">
+          </div>
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.14) 0 1px,transparent 1px 3px);pointer-events:none"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,5,13,0.25),transparent 30%,transparent 55%,rgba(4,5,13,0.9));pointer-events:none"></div>
+          <div style="position:absolute;left:0;right:0;height:90px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.22),transparent);animation:cmaScanY 5s linear infinite;pointer-events:none"></div>
+          <div style="position:absolute;top:14px;left:14px;width:26px;height:26px;border-top:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+          <div style="position:absolute;top:14px;right:14px;width:26px;height:26px;border-top:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+          <div style="position:absolute;bottom:14px;left:14px;width:26px;height:26px;border-bottom:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+          <div style="position:absolute;bottom:14px;right:14px;width:26px;height:26px;border-bottom:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+          <div key="{{ heroPoseKey }}" style="position:absolute;top:24px;right:-1px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:#f9a8d4;background:rgba(4,5,13,0.7);border:1px solid rgba(249,168,212,0.4);border-right:none;padding:7px 12px;backdrop-filter:blur(8px);animation:cmaPoseSlide 3.8s linear both">▮ {{ heroFrame.pose }}</div>
+          <div style="position:absolute;bottom:26px;left:26px;right:26px">
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;margin-bottom:8px">{{ heroFrame.code }} · FASHION MOTION REEL</div>
+            <div style="font-family:'Michroma',sans-serif;font-size:20px;letter-spacing:3px">{{ heroFrame.label }}</div>
+            <div style="display:flex;gap:7px;margin-top:14px">
+              <sc-for list="{{ heroDots }}" as="hd" hint-placeholder-count="4">
+                <button onClick="{{ hd.select }}" style="all:unset;cursor:pointer;width:{{ hd.w }};height:3px;border-radius:2px;background:{{ hd.bg }};transition:all 0.4s"></button>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="archive" data-screen-label="Character Archive" style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:48px">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#7dd3fc">01 / ARCHIVE</div>
+        <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">{{ t.secArchive }}</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:36px">
+        <sc-for list="{{ chars }}" as="ch" hint-placeholder-count="4">
+          <button onClick="{{ ch.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;position:relative;border-radius:14px;overflow:hidden;aspect-ratio:0.72;border:1px solid {{ ch.borderCol }};background:#0a0c18;transition:transform 0.4s,box-shadow 0.4s,border-color 0.4s;display:block" style-hover="transform:perspective(900px) rotateX(3deg) rotateY(-4deg) translateY(-8px);box-shadow:0 28px 60px rgba(0,0,0,0.55),0 0 40px {{ ch.glow }};border-color:rgba(255,255,255,0.5)">
+            <img src="{{ ch.img }}" alt="{{ ch.name }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%">
+            <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0 1px,transparent 1px 4px)"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(4,5,13,0.95))"></div>
+            <div style="position:absolute;top:12px;right:12px;width:9px;height:9px;border-radius:50%;background:{{ ch.dotCol }};box-shadow:0 0 10px {{ ch.dotCol }}"></div>
+            <div style="position:absolute;bottom:16px;left:16px;right:16px">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:{{ ch.accent }};margin-bottom:6px">{{ ch.code }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:14px;letter-spacing:2px;color:#e8ecf4;margin-bottom:5px">{{ ch.name }}</div>
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1px;color:rgba(232,236,244,0.5)">{{ ch.armorType }}</div>
+            </div>
+          </button>
+        </sc-for>
+      </div>
+      <div key="{{ ac.id }}" style="display:grid;grid-template-columns:0.85fr 1.15fr;gap:0;border:1px solid rgba(255,255,255,0.14);border-radius:18px;overflow:hidden;background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);animation:cmaSceneIn 0.7s ease both">
+        <div style="position:relative;min-height:460px;border-right:1px solid rgba(255,255,255,0.1)">
+          <img src="{{ ac.blueprint }}" alt="{{ ac.name }} blueprint" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%">
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,5,13,0.15),transparent 40%,rgba(4,5,13,0.75))"></div>
+          <div style="position:absolute;left:0;right:0;height:70px;background:linear-gradient(180deg,transparent,{{ ac.accentSoft }},transparent);animation:cmaScanY 6s linear infinite"></div>
+          <div style="position:absolute;bottom:18px;left:20px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:{{ ac.accent }}">BLUEPRINT FEED · {{ ac.code }}</div>
+        </div>
+        <div style="padding:44px 48px">
+          <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+            <div style="width:34px;height:2px;background:{{ ac.accent }};box-shadow:0 0 12px {{ ac.accent }}"></div>
+            <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:4px;color:{{ ac.accent }}">{{ ac.code }} — {{ t.dossier }}</div>
+          </div>
+          <div style="font-family:'Michroma',sans-serif;font-size:30px;letter-spacing:3px;margin-bottom:28px">{{ ac.name }}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px;margin-bottom:26px">
+            <sc-for list="{{ acRows }}" as="row" hint-placeholder-count="4">
+              <div style="padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.1)">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-bottom:6px">{{ row.k }}</div>
+                <div style="font-size:14px;font-weight:500;letter-spacing:0.5px">{{ row.v }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);margin-bottom:10px">{{ t.cinDesc }}</div>
+          <p style="font-size:14px;font-weight:300;line-height:1.85;color:rgba(232,236,244,0.72);margin:0 0 26px">{{ acDesc }}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px">
+            <sc-for list="{{ acFeatures }}" as="feat" hint-placeholder-count="3">
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:1.5px;color:{{ ac.accent }};border:1px solid {{ ac.accentSoft }};background:rgba(255,255,255,0.03);border-radius:999px;padding:7px 14px">▸ {{ feat }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="storyboard" data-screen-label="Storyboard Mode" style="border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.015)">
+      <div style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+        <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:14px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#f9a8d4">02 / STORYBOARD</div>
+          <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">{{ t.secStoryboard }}</h2>
+          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-bottom:40px">{{ t.storyboardSub }}</div>
+        <div style="display:flex;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,0.12);margin-bottom:44px">
+          <sc-for list="{{ scenes }}" as="sn" hint-placeholder-count="6">
+            <button onClick="{{ sn.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;flex:1;min-width:150px;padding:16px 14px 20px;border-top:2px solid {{ sn.topCol }};background:{{ sn.bg }};transition:background 0.3s" style-hover="background:rgba(255,255,255,0.06)">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:{{ sn.codeCol }};margin-bottom:8px">{{ sn.code }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:2px;color:{{ sn.labelCol }}">{{ sn.label }}</div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="position:relative;height:560px;border-radius:18px;border:1px solid rgba(255,255,255,0.14);overflow:hidden;background:#07091a">
+          <div key="{{ scene.id }}" style="position:absolute;inset:0;display:flex;flex-direction:{{ scene.dir }};animation:cmaSceneIn 0.8s ease both">
+            <div style="flex:1.1;position:relative;min-width:0">
+              <img src="{{ scene.img }}" alt="{{ scene.label }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.1) 0 1px,transparent 1px 4px)"></div>
+              <div style="position:absolute;left:0;right:0;height:80px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.14),transparent);animation:cmaScanY 7s linear infinite"></div>
+            </div>
+            <div style="flex:0.9;display:flex;flex-direction:column;justify-content:center;padding:60px;box-sizing:border-box;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent)">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:4px;color:{{ scene.accent }};margin-bottom:20px">FRAME {{ scene.code }} · {{ scene.tag }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:clamp(26px,2.8vw,38px);letter-spacing:3px;line-height:1.3;margin-bottom:22px">{{ scene.headline }}</div>
+              <p style="font-size:14px;font-weight:300;line-height:1.9;color:rgba(232,236,244,0.6);margin:0 0 34px;max-width:420px">{{ sceneSub }}</p>
+              <div style="display:flex;gap:26px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45)">
+                <span>LENS {{ scene.lens }}</span><span>·</span><span>{{ scene.light }}</span><span>·</span><span>REEL 02/07</span>
+              </div>
+            </div>
+          </div>
+          <sc-if value="{{ transitioning }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;z-index:5;background:rgba(4,5,13,0.92);overflow:hidden">
+              <div style="position:absolute;top:0;bottom:0;left:0;width:12%;background:linear-gradient(90deg,transparent,rgba(125,211,252,0.7),rgba(249,168,212,0.5),transparent);filter:blur(6px);animation:cmaBeamX 0.85s ease-in-out both"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:6px;color:rgba(125,211,252,0.8);animation:cmaPulse 0.5s infinite">SWITCHING FRAME ▮▮▮</div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </section>
+
+    <section id="loadout" data-screen-label="Weapon Outfit Switcher" style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:48px">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:{{ accent }}">03 / LOADOUT</div>
+        <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">{{ t.secLoadout }}</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1.15fr 0.85fr;gap:28px;align-items:start">
+        <div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-bottom:16px">{{ t.weaponsLabel }}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:38px">
+            <sc-for list="{{ weapons }}" as="w" hint-placeholder-count="6">
+              <button onClick="{{ w.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;border-radius:12px;border:1px solid {{ w.borderCol }};background:{{ w.bg }};padding:18px 20px;transition:all 0.3s;display:block" style-hover="border-color:rgba(255,255,255,0.45);transform:translateY(-3px)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                  <div style="font-family:'Michroma',sans-serif;font-size:12px;letter-spacing:2px;color:{{ w.nameCol }}">{{ w.name }}</div>
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:{{ w.tagCol }};border:1px solid {{ w.borderCol }};border-radius:4px;padding:3px 7px">{{ w.tag }}</div>
+                </div>
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1.5px;color:rgba(232,236,244,0.45);margin-bottom:12px">{{ w.sub }}</div>
+                <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden">
+                  <div style="height:100%;width:{{ w.pct }};background:linear-gradient(90deg,{{ accent }},transparent);border-radius:2px"></div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:rgba(232,236,244,0.45);margin-bottom:16px">{{ t.outfitLabel }}</div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap">
+            <sc-for list="{{ palettes }}" as="p" hint-placeholder-count="4">
+              <button onClick="{{ p.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px" style-hover="transform:translateY(-3px)">
+                <span style="width:38px;height:38px;border-radius:50%;background:{{ p.c1 }};box-shadow:{{ p.ring }};transition:box-shadow 0.3s"></span>
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:{{ p.labelCol }}">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="position:sticky;top:110px;border-radius:16px;border:1px solid {{ accentBorder }};background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,0.45),0 0 46px {{ accentGlow }}">
+          <div style="position:relative;height:280px">
+            <img src="{{ ac.img }}" alt="Loadout preview" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 22%">
+            <div style="position:absolute;inset:0;background:linear-gradient(180deg,{{ accentTint }},transparent 45%,rgba(4,5,13,0.92))"></div>
+            <div style="position:absolute;left:0;right:0;height:60px;background:linear-gradient(180deg,transparent,{{ accentSoft }},transparent);animation:cmaScanY 4.5s linear infinite"></div>
+            <div style="position:absolute;bottom:14px;left:18px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:{{ accent }};animation:cmaPulse 1.8s infinite">▮ {{ t.synced }} — {{ paletteName }}</div>
+          </div>
+          <div style="padding:26px 28px">
+            <div style="font-family:'Michroma',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:20px;color:{{ accent }}">{{ weaponName }}</div>
+            <div style="display:flex;flex-direction:column;gap:12px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px">
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:11px"><span style="color:rgba(232,236,244,0.4)">{{ t.pilotUnit }}</span><span>{{ ac.name }}</span></div>
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:11px"><span style="color:rgba(232,236,244,0.4)">{{ t.output }}</span><span style="color:{{ accent }}">{{ weaponStat }}</span></div>
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:11px"><span style="color:rgba(232,236,244,0.4)">{{ t.outfitMode }}</span><span>{{ paletteName }}</span></div>
+            </div>
+            <p style="font-size:13px;font-weight:300;line-height:1.8;color:rgba(232,236,244,0.6);margin:20px 0 0">{{ weaponDesc }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="showroom" data-screen-label="3D Showroom" style="border-top:1px solid rgba(255,255,255,0.07);border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(255,255,255,0.015)">
+      <div style="max-width:1440px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+        <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:48px">
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#7dd3fc">04 / SHOWROOM</div>
+          <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">{{ t.secShowroom }}</h2>
+          <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:28px;align-items:stretch">
+          <div onMouseDown="{{ stageDown }}" onTouchStart="{{ stageTouch }}" style="position:relative;height:640px;border-radius:18px;border:1px solid rgba(125,211,252,0.25);background:radial-gradient(ellipse at 50% 80%,rgba(125,211,252,0.08),transparent 60%),#060818;overflow:hidden;cursor:grab;user-select:none">
+            <div style="position:absolute;left:50%;bottom:-140px;width:760px;height:760px;transform:translateX(-50%) rotateX(80deg);background-image:linear-gradient(rgba(125,211,252,0.16) 1px,transparent 1px),linear-gradient(90deg,rgba(125,211,252,0.16) 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(circle,black,transparent 68%);-webkit-mask-image:radial-gradient(circle,black,transparent 68%)"></div>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1300px">
+              <div ref="{{ stageRef }}" style="position:relative;width:300px;height:460px;transform-style:preserve-3d">
+                <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                  <img src="assets/silver-blueprint.jpeg" alt="Hologram front" style="width:100%;height:100%;object-fit:cover;object-position:68% 45%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.95);mix-blend-mode:screen;display:block">
+                  <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(4,5,13,0.35) 0 2px,transparent 2px 5px)"></div>
+                </div>
+                <div style="position:absolute;inset:0;transform:rotateY(180deg);backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                  <img src="assets/white-android.jpeg" alt="Hologram back" style="width:100%;height:100%;object-fit:cover;object-position:center 78%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.9);mix-blend-mode:screen;display:block;transform:scaleX(-1)">
+                  <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(4,5,13,0.35) 0 2px,transparent 2px 5px)"></div>
+                </div>
+                <sc-for list="{{ hotspots }}" as="hs" hint-placeholder-count="5">
+                  <button onClick="{{ hs.select }}" title="{{ hs.name }}" style="all:unset;box-sizing:border-box;cursor:pointer;position:absolute;top:{{ hs.top }};left:{{ hs.left }};width:16px;height:16px;border-radius:50%;border:1px solid {{ hs.col }};background:{{ hs.fill }};box-shadow:0 0 12px {{ hs.col }};animation:cmaPulse 2s infinite" style-hover="transform:scale(1.5)"></button>
+                </sc-for>
+              </div>
+            </div>
+            <div style="position:absolute;left:50%;bottom:52px;width:380px;height:110px;transform:translateX(-50%);border:1px solid rgba(125,211,252,0.5);border-radius:50%;animation:cmaRingSpin 9s linear infinite;pointer-events:none"></div>
+            <div style="position:absolute;left:50%;bottom:58px;width:290px;height:84px;transform:translateX(-50%);border:1px dashed rgba(249,168,212,0.45);border-radius:50%;animation:cmaRingSpin 14s linear infinite reverse;pointer-events:none"></div>
+            <div style="position:absolute;top:18px;left:20px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(125,211,252,0.75)">HOLO-BAY 04 · GLB/GLTF SLOT EMPTY — HOLOGRAM FALLBACK</div>
+            <div style="position:absolute;top:18px;right:20px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.4);animation:cmaPulse 2.4s infinite">◉ REC</div>
+            <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:4px;color:rgba(232,236,244,0.45)">{{ t.dragHint }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <sc-for list="{{ parts }}" as="pt" hint-placeholder-count="5">
+              <button onClick="{{ pt.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;align-items:center;gap:16px;border-radius:12px;border:1px solid {{ pt.borderCol }};border-left:3px solid {{ pt.leftCol }};background:{{ pt.bg }};padding:15px 18px;transition:all 0.3s" style-hover="background:rgba(255,255,255,0.06)">
+                <span style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:{{ pt.idxCol }}">{{ pt.idx }}</span>
+                <span style="font-family:'Michroma',sans-serif;font-size:11px;letter-spacing:2px;color:{{ pt.nameCol }}">{{ pt.name }}</span>
+              </button>
+            </sc-for>
+            <div key="{{ part.id }}" style="flex:1;border-radius:14px;border:1px solid rgba(125,211,252,0.3);background:rgba(125,211,252,0.04);backdrop-filter:blur(12px);padding:26px;animation:cmaSceneIn 0.5s ease both">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;margin-bottom:10px">{{ t.componentScan }} · {{ part.idx }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:17px;letter-spacing:2px;margin-bottom:14px">{{ part.name }}</div>
+              <p style="font-size:13px;font-weight:300;line-height:1.8;color:rgba(232,236,244,0.65);margin:0 0 22px">{{ partDesc }}</p>
+              <div style="display:flex;flex-direction:column;gap:14px">
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:7px"><span>{{ t.integrity }}</span><span style="color:#7dd3fc">{{ part.p1 }}</span></div>
+                  <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08)"><div style="height:100%;width:{{ part.p1 }};background:#7dd3fc;border-radius:2px;box-shadow:0 0 8px #7dd3fc"></div></div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45);margin-bottom:7px"><span>{{ t.energyOut }}</span><span style="color:#f9a8d4">{{ part.p2 }}</span></div>
+                  <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.08)"><div style="height:100%;width:{{ part.p2 }};background:#f9a8d4;border-radius:2px;box-shadow:0 0 8px #f9a8d4"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="upload" data-screen-label="Upload Character Lab" style="max-width:1240px;margin:0 auto;padding:110px 72px;box-sizing:border-box">
+      <div style="display:flex;align-items:baseline;gap:22px;margin-bottom:14px">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#f9a8d4">05 / LAB</div>
+        <h2 style="font-family:'Michroma',sans-serif;font-size:clamp(24px,2.6vw,36px);letter-spacing:4px;margin:0;font-weight:400">{{ t.secLab }}</h2>
+        <div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.25),transparent)"></div>
+      </div>
+      <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-bottom:44px">{{ t.labSub }}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:stretch">
+        <div onClick="{{ pickFile }}" onDragOver="{{ dragOver }}" onDrop="{{ dropFile }}" style="border:1px dashed rgba(125,211,252,0.45);border-radius:16px;min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;cursor:pointer;background:rgba(125,211,252,0.02);transition:all 0.3s" style-hover="background:rgba(125,211,252,0.06);border-color:rgba(125,211,252,0.8)">
+          <div style="width:54px;height:54px;border:1px solid rgba(125,211,252,0.6);transform:rotate(45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 0 24px rgba(125,211,252,0.25)">
+            <span style="transform:rotate(-45deg);color:#7dd3fc;font-size:22px;line-height:1">↥</span>
+          </div>
+          <div style="font-family:'Michroma',sans-serif;font-size:13px;letter-spacing:3px">{{ t.dropTitle }}</div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(232,236,244,0.45)">{{ t.dropSub }}</div>
+          <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;color:rgba(249,168,212,0.7)">{{ uploadCountLabel }}</div>
+          <input ref="{{ fileRef }}" type="file" accept="image/*" onChange="{{ fileChange }}" style="display:none">
+        </div>
+        <div style="border-radius:16px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.03);backdrop-filter:blur(14px);padding:26px;display:flex;flex-direction:column">
+          <sc-if value="{{ noUpload }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;min-height:360px">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:4px;color:rgba(232,236,244,0.35)">{{ t.awaiting }}</div>
+              <div style="font-size:13px;font-weight:300;color:rgba(232,236,244,0.45);max-width:300px;line-height:1.8">{{ t.awaitingDesc }}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ hasUpload }}" hint-placeholder-val="{{ false }}">
+            <div style="position:relative;height:260px;border-radius:12px;overflow:hidden;margin-bottom:22px;border:1px solid rgba(125,211,252,0.35)">
+              <img src="{{ uploadUrl }}" alt="Uploaded character" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.12) 0 1px,transparent 1px 4px)"></div>
+              <div style="position:absolute;top:10px;left:10px;width:20px;height:20px;border-top:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+              <div style="position:absolute;top:10px;right:10px;width:20px;height:20px;border-top:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+              <div style="position:absolute;bottom:10px;left:10px;width:20px;height:20px;border-bottom:2px solid #7dd3fc;border-left:2px solid #7dd3fc"></div>
+              <div style="position:absolute;bottom:10px;right:10px;width:20px;height:20px;border-bottom:2px solid #7dd3fc;border-right:2px solid #7dd3fc"></div>
+              <sc-if value="{{ analyzing }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;left:0;right:0;height:70px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.4),transparent);animation:cmaScanY 1.4s linear infinite"></div>
+                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,5,13,0.35)">
+                  <div style="font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:4px;color:#7dd3fc;animation:cmaPulse 0.8s infinite">{{ t.analyzing }}</div>
+                </div>
+              </sc-if>
+            </div>
+            <sc-if value="{{ analysisDone }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:11px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:1.5px;margin-bottom:20px">
+                <sc-for list="{{ analysisRows }}" as="ar" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px">
+                    <span style="color:rgba(232,236,244,0.4);white-space:nowrap">{{ ar.k }}</span><span style="text-align:right;color:#e8ecf4">{{ ar.v }}</span>
+                  </div>
+                </sc-for>
+                <div style="display:flex;justify-content:space-between;gap:16px;padding-top:4px">
+                  <span style="color:rgba(232,236,244,0.4)">{{ t.rarity }}</span><span style="color:#f9a8d4;text-shadow:0 0 12px rgba(249,168,212,0.7)">{{ analysisRarity }}</span>
+                </div>
+              </div>
+              <sc-if value="{{ notAdded }}" hint-placeholder-val="{{ true }}">
+                <div style="padding:1px;border-radius:10px;background:linear-gradient(90deg,#7dd3fc,#f9a8d4,#a78bfa,#7dd3fc);background-size:300% 100%;animation:cmaFlow 4s linear infinite;align-self:flex-start">
+                  <button onClick="{{ addToArchive }}" style="border:none;cursor:pointer;border-radius:9px;background:#070a16;color:#e8ecf4;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:3px;padding:14px 24px" style-hover="background:#0d1226">{{ t.addArchive }} ▸</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ wasAdded }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:#7dd3fc;animation:cmaPulse 2s infinite">▮ {{ t.registered }}</div>
+              </sc-if>
+            </sc-if>
+          </sc-if>
+        </div>
+      </div>
+    </section>
+
+    <footer data-screen-label="Footer" style="border-top:1px solid rgba(255,255,255,0.08);padding:90px 72px 60px;position:relative;z-index:1">
+      <div style="max-width:1240px;margin:0 auto;text-align:center">
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:6px;color:rgba(125,211,252,0.7);margin-bottom:20px">— END OF REEL —</div>
+        <div style="font-family:'Michroma',sans-serif;font-size:clamp(20px,2.4vw,30px);letter-spacing:6px;margin-bottom:44px">NEURA MUSE</div>
+        <div style="display:flex;justify-content:center;gap:64px;flex-wrap:wrap;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:2px;line-height:2.2;color:rgba(232,236,244,0.45);margin-bottom:44px;text-align:left">
+          <div><div style="color:rgba(232,236,244,0.8);margin-bottom:6px">{{ t.ftProd }}</div>DIRECTED BY THE MUSE UNIT<br>ARMOR DESIGN — LUNAR ATELIER<br>SHOT ON ORBITAL STAGE 7</div>
+          <div><div style="color:rgba(232,236,244,0.8);margin-bottom:6px">{{ t.ftWorld }}</div>SECTOR 07 — OUTER SPIRAL<br>YEAR 2077 · POST-CHROME ERA<br>ALL UNITS ARE CINEMATIC AVATARS</div>
+          <div><div style="color:rgba(232,236,244,0.8);margin-bottom:6px">{{ t.ftTrans }}</div>SWITCH ARMOR. REWRITE IDENTITY.<br>EVERY FRAME IS A WEAPONIZED<br>FASHION STATEMENT.</div>
+        </div>
+        <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:rgba(232,236,244,0.3)">© 2077 NEURA MUSE STUDIOS — {{ t.ftCopy }}</div>
+      </div>
+    </footer>
+  </main>
+  </sc-if>
+
+  <!-- ============ APP MODE ============ -->
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="App Mode" style="position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:120px 20px 60px;box-sizing:border-box">
+      <div style="position:relative;width:400px;max-width:100%;height:830px;border-radius:52px;border:1px solid rgba(255,255,255,0.28);background:#05060f;overflow:hidden;box-shadow:0 60px 120px rgba(0,0,0,0.7),0 0 80px rgba(125,211,252,0.12),inset 0 0 0 2px rgba(255,255,255,0.05)">
+        <div style="position:absolute;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:16px 28px 10px;background:linear-gradient(180deg,rgba(5,6,15,0.95),transparent);font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px;color:rgba(232,236,244,0.75)">
+          <span>20:77</span>
+          <div style="width:110px;height:26px;border-radius:14px;background:#000;border:1px solid rgba(255,255,255,0.12)"></div>
+          <span style="color:#7dd3fc">▮▮▮ 5G</span>
+        </div>
+        <div style="position:absolute;top:0;bottom:76px;left:0;right:0;overflow-y:auto;padding:64px 18px 24px;box-sizing:border-box">
+
+          <sc-if value="{{ tabHome }}" hint-placeholder-val="{{ true }}">
+            <div style="position:relative;height:470px;border-radius:26px;overflow:hidden;border:1px solid rgba(255,255,255,0.18);margin-bottom:18px">
+              <div key="{{ heroFrame.id }}" style="position:absolute;inset:0;animation:cmaSceneIn 0.9s ease both">
+                <img src="{{ heroFrame.img }}" alt="{{ heroFrame.label }}" style="width:100%;height:100%;object-fit:cover;object-position:{{ heroFrame.pos }};animation:cmaKenBurns 5s ease-out both">
+              </div>
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,5,13,0.3),transparent 35%,rgba(4,5,13,0.95))"></div>
+              <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,0.1) 0 1px,transparent 1px 4px)"></div>
+              <div style="position:absolute;left:0;right:0;height:70px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.2),transparent);animation:cmaScanY 5s linear infinite"></div>
+              <div style="position:absolute;bottom:22px;left:22px;right:22px">
+                <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#f9a8d4;margin-bottom:8px">▮ {{ heroFrame.pose }}</div>
+                <div style="font-family:'Michroma',sans-serif;font-size:24px;letter-spacing:3px;line-height:1.35;margin-bottom:16px">NEURA MUSE</div>
+                <button onClick="{{ appGoArchive }}" style="cursor:pointer;border-radius:10px;border:1px solid rgba(125,211,252,0.6);background:rgba(125,211,252,0.12);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:3px;padding:13px 22px">{{ t.ctaEnter }} ▸</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px">
+              <div style="flex:1;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;font-family:ui-monospace,Menlo,monospace"><div style="font-size:18px;letter-spacing:2px">{{ unitCount }}</div><div style="font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-top:5px">{{ t.statUnits }}</div></div>
+              <div style="flex:1;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;font-family:ui-monospace,Menlo,monospace"><div style="font-size:18px;letter-spacing:2px">07</div><div style="font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-top:5px">{{ t.statFrames }}</div></div>
+              <div style="flex:1;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;font-family:ui-monospace,Menlo,monospace"><div style="font-size:18px;letter-spacing:2px;color:#7dd3fc">LIVE</div><div style="font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.4);margin-top:5px">{{ t.statStatus }}</div></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabArchive }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">{{ t.secArchive }}</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <sc-for list="{{ chars }}" as="ch" hint-placeholder-count="4">
+                <button onClick="{{ ch.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;display:flex;height:150px;border-radius:20px;overflow:hidden;border:1px solid {{ ch.borderCol }};background:rgba(255,255,255,0.03)">
+                  <div style="position:relative;width:42%;flex:none">
+                    <img src="{{ ch.img }}" alt="{{ ch.name }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%">
+                    <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,#0a0c18)"></div>
+                  </div>
+                  <div style="flex:1;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;gap:7px">
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:{{ ch.accent }}">{{ ch.code }}</div>
+                    <div style="font-family:'Michroma',sans-serif;font-size:13px;letter-spacing:1.5px">{{ ch.name }}</div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:1px;color:rgba(232,236,244,0.5)">{{ ch.armorType }}</div>
+                    <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:1px;color:rgba(232,236,244,0.35)">{{ ch.weapon }}</div>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+            <div key="{{ ac.id }}" style="margin-top:18px;border-radius:20px;border:1px solid {{ ac.accentSoft }};background:rgba(255,255,255,0.03);padding:20px;animation:cmaSceneIn 0.5s ease both">
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:3px;color:{{ ac.accent }};margin-bottom:8px">{{ ac.code }} — {{ t.dossier }}</div>
+              <div style="font-family:'Michroma',sans-serif;font-size:16px;letter-spacing:2px;margin-bottom:12px">{{ ac.name }}</div>
+              <p style="font-size:12px;font-weight:300;line-height:1.8;color:rgba(232,236,244,0.65);margin:0">{{ acDesc }}</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tab3d }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">{{ t.secShowroom }}</div>
+            <div onMouseDown="{{ stageDown }}" onTouchStart="{{ stageTouch }}" style="position:relative;height:440px;border-radius:22px;border:1px solid rgba(125,211,252,0.3);background:radial-gradient(ellipse at 50% 85%,rgba(125,211,252,0.1),transparent 60%),#060818;overflow:hidden;cursor:grab;user-select:none;margin-bottom:16px">
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;perspective:1000px">
+                <div ref="{{ appStageRef }}" style="position:relative;width:210px;height:330px;transform-style:preserve-3d">
+                  <div style="position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                    <img src="assets/silver-blueprint.jpeg" alt="Hologram" style="width:100%;height:100%;object-fit:cover;object-position:68% 45%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.95);mix-blend-mode:screen;display:block">
+                    <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(4,5,13,0.35) 0 2px,transparent 2px 5px)"></div>
+                  </div>
+                  <div style="position:absolute;inset:0;transform:rotateY(180deg);backface-visibility:hidden;border-radius:12px;overflow:hidden;animation:cmaHoloFlicker 6s infinite">
+                    <img src="assets/white-android.jpeg" alt="Hologram back" style="width:100%;height:100%;object-fit:cover;object-position:center 78%;filter:sepia(1) hue-rotate(165deg) saturate(3.2) brightness(0.9);mix-blend-mode:screen;display:block;transform:scaleX(-1)">
+                  </div>
+                </div>
+              </div>
+              <div style="position:absolute;left:50%;bottom:34px;width:250px;height:74px;transform:translateX(-50%);border:1px solid rgba(125,211,252,0.5);border-radius:50%;animation:cmaRingSpin 9s linear infinite;pointer-events:none"></div>
+              <div style="position:absolute;bottom:12px;left:0;right:0;text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:3px;color:rgba(232,236,244,0.45)">{{ t.dragHint }}</div>
+            </div>
+            <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px">
+              <sc-for list="{{ parts }}" as="pt" hint-placeholder-count="5">
+                <button onClick="{{ pt.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;flex:none;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1.5px;color:{{ pt.nameCol }};border:1px solid {{ pt.borderCol }};border-radius:999px;padding:9px 14px;background:{{ pt.bg }}">{{ pt.name }}</button>
+              </sc-for>
+            </div>
+            <div key="{{ part.id }}" style="border-radius:18px;border:1px solid rgba(125,211,252,0.3);background:rgba(125,211,252,0.05);padding:18px;animation:cmaSceneIn 0.5s ease both">
+              <div style="font-family:'Michroma',sans-serif;font-size:13px;letter-spacing:2px;margin-bottom:10px">{{ part.name }}</div>
+              <p style="font-size:12px;font-weight:300;line-height:1.75;color:rgba(232,236,244,0.65);margin:0">{{ partDesc }}</p>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ tabUpload }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">{{ t.secLab }}</div>
+            <div onClick="{{ pickFile }}" onDragOver="{{ dragOver }}" onDrop="{{ dropFile }}" style="border:1px dashed rgba(125,211,252,0.5);border-radius:20px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;background:rgba(125,211,252,0.03);margin-bottom:16px">
+              <span style="color:#7dd3fc;font-size:20px">↥</span>
+              <div style="font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:2px">{{ t.dropTitle }}</div>
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:rgba(232,236,244,0.45)">{{ uploadCountLabel }}</div>
+            </div>
+            <sc-if value="{{ hasUpload }}" hint-placeholder-val="{{ false }}">
+              <div style="position:relative;height:230px;border-radius:16px;overflow:hidden;border:1px solid rgba(125,211,252,0.4);margin-bottom:16px">
+                <img src="{{ uploadUrl }}" alt="Uploaded character" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+                <sc-if value="{{ analyzing }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:0;right:0;height:60px;background:linear-gradient(180deg,transparent,rgba(125,211,252,0.4),transparent);animation:cmaScanY 1.4s linear infinite"></div>
+                  <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(4,5,13,0.35);font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:3px;color:#7dd3fc;animation:cmaPulse 0.8s infinite">{{ t.analyzing }}</div>
+                </sc-if>
+              </div>
+              <sc-if value="{{ analysisDone }}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);padding:16px;display:flex;flex-direction:column;gap:10px;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:1.5px;margin-bottom:14px">
+                  <sc-for list="{{ analysisRows }}" as="ar" hint-placeholder-count="4">
+                    <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:rgba(232,236,244,0.4)">{{ ar.k }}</span><span style="text-align:right">{{ ar.v }}</span></div>
+                  </sc-for>
+                  <div style="display:flex;justify-content:space-between;gap:12px"><span style="color:rgba(232,236,244,0.4)">{{ t.rarity }}</span><span style="color:#f9a8d4">{{ analysisRarity }}</span></div>
+                </div>
+                <sc-if value="{{ notAdded }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ addToArchive }}" style="cursor:pointer;width:100%;border-radius:12px;border:1px solid rgba(125,211,252,0.6);background:rgba(125,211,252,0.12);color:#7dd3fc;font-family:'Michroma',sans-serif;font-size:10px;letter-spacing:3px;padding:15px">{{ t.addArchive }} ▸</button>
+                </sc-if>
+                <sc-if value="{{ wasAdded }}" hint-placeholder-val="{{ false }}">
+                  <div style="text-align:center;font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc;animation:cmaPulse 2s infinite">▮ {{ t.registered }}</div>
+                </sc-if>
+              </sc-if>
+            </sc-if>
+          </sc-if>
+
+          <sc-if value="{{ tabProfile }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px;margin:6px 4px 16px">{{ t.tabProfile }}</div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 0 30px">
+              <div style="position:relative;width:110px;height:110px;border-radius:50%;overflow:hidden;border:2px solid rgba(125,211,252,0.5);box-shadow:0 0 34px rgba(125,211,252,0.3)">
+                <img src="assets/white-android.jpeg" alt="Pilot avatar" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 12%">
+              </div>
+              <div style="font-family:'Michroma',sans-serif;font-size:15px;letter-spacing:3px">PILOT — K.MUSE</div>
+              <div style="font-family:ui-monospace,Menlo,monospace;font-size:9px;letter-spacing:3px;color:#7dd3fc">CLEARANCE LEVEL 07 · DIRECTOR</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;font-family:ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:2px">
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">{{ t.statUnits }}</span><span>{{ unitCount }}</span></div>
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">{{ t.statFrames }}</span><span>07</span></div>
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">SECTOR</span><span>07 — OUTER SPIRAL</span></div>
+              <div style="display:flex;justify-content:space-between;border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,0.03)"><span style="color:rgba(232,236,244,0.45)">MEMBERSHIP</span><span style="color:#f9a8d4">CHROME ELITE</span></div>
+            </div>
+          </sc-if>
+
+        </div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:76px;display:flex;border-top:1px solid rgba(255,255,255,0.1);background:rgba(5,6,15,0.85);backdrop-filter:blur(16px)">
+          <sc-for list="{{ appTabs }}" as="tb" hint-placeholder-count="5">
+            <button onClick="{{ tb.select }}" style="all:unset;box-sizing:border-box;cursor:pointer;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative">
+              <span style="position:absolute;top:0;left:25%;right:25%;height:2px;border-radius:2px;background:{{ tb.barCol }}"></span>
+              <span style="font-size:17px;color:{{ tb.col }};line-height:1">{{ tb.glyph }}</span>
+              <span style="font-family:ui-monospace,Menlo,monospace;font-size:8px;letter-spacing:2px;color:{{ tb.col }}">{{ tb.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultPalette&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;silver-ice&quot;,&quot;pink-nova&quot;,&quot;black-galaxy&quot;,&quot;white-chrome&quot;],&quot;default&quot;:&quot;silver-ice&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;introEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;autoRotate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  state = {
+    lang: 'en',
+    mode: 'web',
+    view: 'site',
+    authed: false,
+    loginPw: '',
+    loginErr: false,
+    appTab: 'home',
+    showIntro: (this.props.introEnabled ?? true),
+    heroIdx: 0,
+    activeCharId: 'silver-valkyrie',
+    sceneId: 'cover',
+    transitioning: false,
+    weaponId: 'plasma-blade',
+    paletteId: this.props.defaultPalette ?? 'silver-ice',
+    partId: 'core-reactor',
+    uploads: [],
+    analyzing: false,
+    analysis: null,
+    added: false,
+    dbChars: [],
+    editingId: null,
+    form: null
+  };
+
+  starsRef = React.createRef();
+  stageRef = React.createRef();
+  appStageRef = React.createRef();
+  fileRef = React.createRef();
+  formFileRef = React.createRef();
+
+  LS_KEY = 'neura_muse_characters_v1';
+  LS_AUTH = 'neura_muse_admin_v1';
+  ACCENTS = ['#7dd3fc', '#f9a8d4', '#a5b4fc', '#e2e8f0'];
+
+  DEFAULT_CHARS = [
+    { id:'silver-valkyrie', name:'SILVER VALKYRIE', code:'UNIT-01', accent:'#7dd3fc', isPublic:true,
+      armorType:'VLK-7 Cryo Chrome Frame', weapon:'Twin-Coil Ion Rifle', core:'Cryogenic Fusion Cell',
+      img:'assets/silver-valkyrie.jpeg', blueprint:'assets/silver-blueprint.jpeg',
+      desc:'Opening-frame heroine of the Outer Spiral reel. Her mirror-chrome plating drops ambient temperature by four degrees in every scene she enters. She never fires first — the neon spinal conduit charges while she decides whether you are worth the shot.',
+      descZh:'外旋臂膠卷的開場女主角。她的鏡面鉻甲讓每個她踏入的場景氣溫下降四度。她從不先開火——霓虹脊椎導管持續充能，同時她在判斷你是否值得那一槍。',
+      features:['Neon spinal conduit','Zero-K mirror plating','Optic tracking array'] },
+    { id:'pink-nova', name:'PINK NOVA', code:'UNIT-02', accent:'#f9a8d4', isPublic:true,
+      armorType:'NV-2 Gloss Impact Suit', weapon:'Plasma Blade · Heart Sequence', core:'Nova Pulse Reactor',
+      img:'assets/pink-nova.jpeg', blueprint:'assets/pink-helmet.jpeg',
+      desc:'Soft silhouette, catastrophic output. The gloss-pink shell reads as couture until the reactor spikes — then the whole frame blooms like a supernova caught on 70mm film. Fan-favorite of the mid-season combat episode.',
+      descZh:'柔和的輪廓，毀滅性的輸出。亮粉外殼看似高級訂製服，直到反應爐功率飆升——整個機體如 70mm 底片上捕捉到的超新星般綻放。季中戰鬥集數的人氣王。',
+      features:['Gloss impact shell','Heart-sequence ignition','Supernova bloom mode'] },
+    { id:'magazine-android', name:'MAGAZINE ANDROID', code:'UNIT-03', accent:'#e2e8f0', isPublic:true,
+      armorType:'Editorial Chrome Series', weapon:'Gaze Protocol · Lens Killer', core:'Cover-Light Capacitor',
+      img:'assets/klapon-cover.jpeg', blueprint:'assets/white-android.jpeg',
+      desc:'She has never lost a cover shoot. Engineered for the front page of every orbital newsstand, her capacitor charges off studio strobes. The red masthead follows her from magazine to magazine like a loyal drone.',
+      descZh:'她從未輸掉任何一次封面拍攝。為每一個軌道報攤的頭版而生，她的電容器靠攝影棚閃光燈充電。紅色刊頭像忠誠的無人機一樣跟著她從一本雜誌飛到另一本。',
+      features:['Front-page targeting','Strobe-charged core','Masthead drone escort'] },
+    { id:'armor-blueprint', name:'ARMOR BLUEPRINT', code:'UNIT-04', accent:'#a5b4fc', isPublic:true,
+      armorType:'Full Teardown Schematic', weapon:'Annotated Arsenal Index', core:'Exploded-View Manifold',
+      img:'assets/silver-blueprint.jpeg', blueprint:'assets/red-robot.jpeg',
+      desc:'The archive page itself — every rivet, coil and actuator of the fleet, exploded and annotated. Analysts claim the notes are printed in a language that does not exist yet. The blueprints update themselves between readings.',
+      descZh:'檔案庫本身——艦隊每一顆鉚釘、線圈與致動器的爆炸拆解註記圖。分析師聲稱那些註解使用一種尚不存在的語言。藍圖會在兩次閱讀之間自行更新。',
+      features:['Self-updating schematics','Annotated weapon index','Unknown-language notes'] }
+  ];
+
+  HERO_FRAMES = [
+    { id:'hf1', img:'assets/silver-valkyrie.jpeg', pos:'center 30%', label:'SILVER VALKYRIE', code:'UNIT-01', pose:'POSE 01 — RUNWAY STANCE', poseZh:'姿態 01 — 伸展台站姿' },
+    { id:'hf2', img:'assets/pink-nova.jpeg', pos:'center 22%', label:'PINK NOVA', code:'UNIT-02', pose:'POSE 02 — REACTOR IGNITION', poseZh:'姿態 02 — 反應爐點火' },
+    { id:'hf3', img:'assets/klapon-cover.jpeg', pos:'center 18%', label:'MAGAZINE ANDROID', code:'UNIT-03', pose:'POSE 03 — COVER GAZE', poseZh:'姿態 03 — 封面凝視' },
+    { id:'hf4', img:'assets/pink-helmet.jpeg', pos:'center 30%', label:'NOVA PROFILE', code:'UNIT-02B', pose:'POSE 04 — SIDE PROFILE TURN', poseZh:'姿態 04 — 側面轉身' }
+  ];
+
+  SCENES = [
+    { id:'cover', code:'S.01', label:'COVER SHOT', img:'assets/klapon-cover.jpeg', dir:'row', accent:'#f9a8d4', tag:'EDITORIAL',
+      headline:'THE COVER THAT STARES BACK', lens:'85MM F1.2', light:'STUDIO STROBE',
+      sub:'Issue 02 opens on the Magazine Android holding the newsstand hostage. No retouching required — the chrome does it herself.',
+      subZh:'第 02 期以雜誌人形機挾持整個報攤開場。不需要修圖——鉻甲自己會發光。' },
+    { id:'full-body', code:'S.02', label:'FULL BODY ARMOR', img:'assets/silver-blueprint.jpeg', dir:'row-reverse', accent:'#7dd3fc', tag:'SPEC SHEET',
+      headline:'HEAD-TO-TOE CHROME DOCTRINE', lens:'50MM F4.0', light:'FLAT LAB WHITE',
+      sub:'Front and rear elevation of the VLK-7 frame. Every panel line is a decision; every servo is signed by the Lunar Atelier.',
+      subZh:'VLK-7 機體的正背立面圖。每一條分件線都是一個決定；每一顆伺服馬達都有月面工坊的簽名。' },
+    { id:'side-profile', code:'S.03', label:'SIDE PROFILE', img:'assets/pink-helmet.jpeg', dir:'row', accent:'#f9a8d4', tag:'PORTRAIT',
+      headline:'PROFILE OF A SUPERNOVA', lens:'105MM F1.4', light:'SOFT KEY LEFT',
+      sub:'Pink Nova in cross-section — helmet optics, coolant veins, and the quiet second before the heart sequence ignites.',
+      subZh:'Pink Nova 的側面剖析——頭盔光學系統、冷卻液脈絡，以及心核序列點燃前安靜的一秒。' },
+    { id:'weapon-loadout', code:'S.04', label:'WEAPON LOADOUT', img:'assets/red-robot.jpeg', dir:'row-reverse', accent:'#a5b4fc', tag:'ARSENAL',
+      headline:'THE ESCORT NEVER BLINKS', lens:'35MM F2.8', light:'HARD RIM RED',
+      sub:'Sentinel frame at parade rest, internals exposed. The red masthead approves. The safety, as always, is a rumor.',
+      subZh:'哨兵機體以閱兵姿態立正，內部結構全數外露。紅色刊頭表示認可。保險栓，一如既往，只是個傳聞。' },
+    { id:'combat-ready', code:'S.05', label:'COMBAT READY', img:'assets/silver-valkyrie.jpeg', dir:'row', accent:'#7dd3fc', tag:'ACTION',
+      headline:'FOUR DEGREES COLDER', lens:'ANAMORPHIC 40MM', light:'CRYO BLUE PRACTICAL',
+      sub:'Silver Valkyrie steps into frame and the set frosts over. Rolling. Nobody calls cut.',
+      subZh:'Silver Valkyrie 一踏入鏡頭，整個片場結霜。攝影機持續運轉。沒有人喊卡。' },
+    { id:'blueprint', code:'S.06', label:'BLUEPRINT ANALYSIS', img:'assets/pink-nova.jpeg', dir:'row-reverse', accent:'#f9a8d4', tag:'TEARDOWN',
+      headline:'ANATOMY OF A FASHION WEAPON', lens:'MACRO 100MM', light:'DOCUMENT SCAN',
+      sub:'Gloss shell peeled back to the pulse reactor. The annotations insist this is outerwear. The output numbers disagree.',
+      subZh:'亮面外殼一路剝到脈衝反應爐。註解堅稱這是外套。輸出數據並不同意。' }
+  ];
+
+  WEAPONS = [
+    { id:'plasma-blade', name:'PLASMA BLADE', sub:'CLOSE QUARTERS · HEART SEQUENCE', tag:'MELEE', pct:86, stat:'8.6 TW BURST',
+      desc:'A blade of contained sunrise. Cuts through armor plate and awkward silences with equal grace.',
+      descZh:'一柄封存日出的刀。切開裝甲板與尷尬的沉默，同樣優雅。' },
+    { id:'ion-rifle', name:'ION RIFLE', sub:'TWIN COIL · 2.4KM EFFECTIVE', tag:'RANGED', pct:74, stat:'7.4 TW SUSTAINED',
+      desc:'The Valkyrie signature. Twin coils sing a chord one octave below hearing right before discharge.',
+      descZh:'女武神的招牌。雙線圈在擊發前一刻，唱出低於人耳一個八度的和弦。' },
+    { id:'nano-shield', name:'NANO SHIELD', sub:'ADAPTIVE LATTICE · 360°', tag:'DEFENSE', pct:92, stat:'92% ABSORPTION',
+      desc:'A swarm of mirrored petals that assembles a wall wherever the director frames the shot.',
+      descZh:'一群鏡面花瓣，會在導演取景的任何地方組合成一面牆。' },
+    { id:'wing-booster', name:'WING BOOSTER', sub:'ORBITAL SPRINT · MACH 9', tag:'MOBILITY', pct:81, stat:'MACH 9.1 DASH',
+      desc:'Deployable chrome wings. Strictly speaking not flight — just falling with impeccable styling.',
+      descZh:'可展開的鉻翼。嚴格來說不算飛行——只是姿態無可挑剔的墜落。' },
+    { id:'stealth-cloak', name:'STEALTH CLOAK', sub:'LIGHT-FOLD WEAVE · GHOST MODE', tag:'COVERT', pct:68, stat:'0.02 LUMEN TRACE',
+      desc:'Folds light around the frame. The camera still finds her — the cloak was never meant for cameras.',
+      descZh:'將光線折疊於機體周圍。攝影機依然找得到她——這件斗篷從來就不是為了躲攝影機。' },
+    { id:'heavy-armor', name:'HEAVY ARMOR MODE', sub:'SIEGE PLATING · FORTRESS STANCE', tag:'SIEGE', pct:97, stat:'97% MITIGATION',
+      desc:'The couture becomes a cathedral. Movement drops by half; presence roughly triples.',
+      descZh:'訂製服化為大教堂。移動力減半；存在感大約變成三倍。' }
+  ];
+
+  PALETTES = [
+    { id:'silver-ice', name:'SILVER ICE', nameZh:'銀冰', c1:'#7dd3fc' },
+    { id:'pink-nova', name:'PINK NOVA', nameZh:'粉新星', c1:'#f9a8d4' },
+    { id:'black-galaxy', name:'BLACK GALAXY', nameZh:'黑銀河', c1:'#a78bfa' },
+    { id:'white-chrome', name:'WHITE CHROME', nameZh:'白鉻', c1:'#e2e8f0' }
+  ];
+
+  PARTS = [
+    { id:'neural-helmet', idx:'P.01', name:'NEURAL HELMET', p1:'96%', p2:'71%', top:'4%', left:'46%',
+      desc:'Full-spectrum optic array with a 900ms precognition buffer. She sees the frame before the camera does.',
+      descZh:'全頻譜光學陣列，內建 900 毫秒預知緩衝。她比攝影機更早看見畫面。' },
+    { id:'core-reactor', idx:'P.02', name:'CORE REACTOR', p1:'98%', p2:'94%', top:'30%', left:'50%',
+      desc:'Cryogenic fusion cell rated for eleven years of continuous performance, or one very dramatic finale.',
+      descZh:'低溫核融合電池，額定可連續演出十一年，或一場非常戲劇化的大結局。' },
+    { id:'shoulder-armor', idx:'P.03', name:'SHOULDER ARMOR', p1:'89%', p2:'62%', top:'22%', left:'16%',
+      desc:'Layered chrome pauldrons with kinetic dispersion channels. Doubles as the best silhouette in the sector.',
+      descZh:'多層鉻護肩，內建動能分散導槽。同時是本星區最好看的剪影。' },
+    { id:'arm-weapon', idx:'P.04', name:'ARM WEAPON', p1:'84%', p2:'88%', top:'48%', left:'80%',
+      desc:'Modular forearm hardpoint. Accepts blade, rifle or shield emitter — swaps mid-scene without a cut.',
+      descZh:'模組化前臂掛點。可裝刀刃、步槍或護盾發射器——場景中途換裝，不需要剪接。' },
+    { id:'leg-booster', idx:'P.05', name:'LEG BOOSTER', p1:'91%', p2:'79%', top:'78%', left:'38%',
+      desc:'Vector thrusters woven into the calf plating. Zero-to-orbit in one continuous tracking shot.',
+      descZh:'編入小腿裝甲的向量推進器。一個連續跟拍長鏡頭內，從地面直上軌道。' }
+  ];
+
+  T = {
+    en: {
+      tagline:'GALAXY ARMOR CHARACTER LAB', web:'WEB', app:'APP',
+      navArchive:'ARCHIVE', navStoryboard:'STORYBOARD', navLoadout:'LOADOUT', navShowroom:'SHOWROOM', navUpload:'UPLOAD', navAdmin:'ADMIN',
+      heroEyebrow:'A CINEMATIC ARCHIVE OF CYBERNETIC MUSES',
+      heroDesc:'Upload your character. Enter the galaxy. Every frame is a weaponized fashion statement — designed for future idols, android warriors, and cinematic avatars.',
+      ctaEnter:'ENTER ARCHIVE', cta3d:'VIEW 3D MODEL', ctaUpload:'UPLOAD CHARACTER',
+      statUnits:'UNITS REGISTERED', statFrames:'CINEMATIC FRAMES', statStatus:'ARCHIVE STATUS',
+      secArchive:'CHARACTER ARCHIVE', secStoryboard:'CINEMATIC TIMELINE', secLoadout:'WEAPON & OUTFIT SWITCHER',
+      secShowroom:'3D INTERACTIVE SHOWROOM', secLab:'UPLOAD CHARACTER LAB',
+      storyboardSub:"SELECT A FRAME — DIRECTOR'S CUT · 2077 PRODUCTION REEL",
+      dossier:'DOSSIER', cinDesc:'CINEMATIC DESCRIPTION',
+      fldName:'CHARACTER NAME', fldArmor:'ARMOR TYPE', fldWeapon:'WEAPON SYSTEM', fldCore:'ENERGY CORE',
+      weaponsLabel:'WEAPON SYSTEMS — SELECT ONE', outfitLabel:'OUTFIT PALETTE — REWRITE IDENTITY',
+      synced:'LOADOUT SYNCED', pilotUnit:'PILOT UNIT', output:'OUTPUT', outfitMode:'OUTFIT MODE',
+      dragHint:'DRAG TO ROTATE — AUTO-ORBIT ENABLED', componentScan:'COMPONENT SCAN', integrity:'INTEGRITY', energyOut:'ENERGY OUTPUT',
+      labSub:'UPLOAD YOUR CHARACTER. ENTER THE GALAXY.',
+      dropTitle:'DROP CHARACTER IMAGE', dropSub:'PNG / JPEG — DRAG & DROP OR CLICK TO BROWSE',
+      awaiting:'AWAITING SPECIMEN',
+      awaitingDesc:'Drop an image to run cinematic analysis: armor palette, mood, suggested weapon, rarity level.',
+      analyzing:'ANALYZING CHARACTER...', addArchive:'ADD TO ARCHIVE', registered:'UNIT REGISTERED — SEE CHARACTER ARCHIVE',
+      anPalette:'ARMOR COLOR PALETTE', anMood:'CHARACTER MOOD', anWeapon:'SUGGESTED WEAPON', anRole:'CINEMATIC ROLE', rarity:'RARITY LEVEL',
+      slotAvail:'ARCHIVE SLOT AVAILABLE', specimens:'SPECIMEN(S) RECEIVED',
+      ftProd:'PRODUCTION', ftWorld:'WORLD', ftTrans:'TRANSMISSION', ftCopy:'A CINEMATIC ARCHIVE OF CYBERNETIC MUSES',
+      tabHome:'HOME', tabArchive:'ARCHIVE', tab3d:'3D', tabUpload:'UPLOAD', tabProfile:'PROFILE',
+      adminTitle:'ADMIN CONSOLE', adminSub:'Restricted area. Sign in to manage characters, publish state and archive content.',
+      password:'ACCESS CODE', signIn:'SIGN IN', wrongPw:'ACCESS DENIED — WRONG CODE',
+      dashTitle:'CHARACTER MANAGEMENT', newChar:'NEW CHARACTER', logout:'SIGN OUT',
+      edit:'EDIT', save:'SAVE CHARACTER', cancel:'CANCEL',
+      pubOn:'● PUBLIC', pubOff:'○ HIDDEN',
+      editNew:'NEW CHARACTER — DRAFT', editExisting:'EDITING CHARACTER',
+      fName:'NAME', fArmor:'ARMOR TYPE', fWeapon:'WEAPON SYSTEM', fCore:'ENERGY CORE',
+      fDescEn:'CINEMATIC DESCRIPTION (EN)', fDescZh:'CINEMATIC DESCRIPTION (中文)', fTheme:'COLOR THEME',
+      dashNote:'※ Prototype persists to browser storage. The production build syncs these operations to Supabase Postgres + Storage with RLS.'
+    },
+    zh: {
+      tagline:'銀河機甲角色實驗室', web:'網頁', app:'APP',
+      navArchive:'角色檔案', navStoryboard:'分鏡', navLoadout:'裝備', navShowroom:'3D 展示', navUpload:'上傳', navAdmin:'後台',
+      heroEyebrow:'賽博繆斯的電影級檔案庫',
+      heroDesc:'上傳你的角色，進入銀河。每一幀都是武裝化的時尚宣言——為未來偶像、人形機戰士與電影級虛擬化身而設計。',
+      ctaEnter:'進入檔案庫', cta3d:'觀看 3D 模型', ctaUpload:'上傳角色',
+      statUnits:'已註冊機體', statFrames:'電影分鏡', statStatus:'檔案庫狀態',
+      secArchive:'角色檔案庫', secStoryboard:'電影分鏡時間軸', secLoadout:'武器與裝扮切換',
+      secShowroom:'3D 互動展示間', secLab:'角色上傳實驗室',
+      storyboardSub:'選擇一格分鏡 — 導演剪輯版 · 2077 製作膠卷',
+      dossier:'檔案', cinDesc:'電影敘述',
+      fldName:'角色名稱', fldArmor:'裝甲類型', fldWeapon:'武器系統', fldCore:'能量核心',
+      weaponsLabel:'武器系統 — 選擇一項', outfitLabel:'裝扮色系 — 重寫身份',
+      synced:'裝備已同步', pilotUnit:'駕駛機體', output:'輸出功率', outfitMode:'裝扮模式',
+      dragHint:'拖曳旋轉 — 自動環繞已啟用', componentScan:'部件掃描', integrity:'完整度', energyOut:'能量輸出',
+      labSub:'上傳你的角色，進入銀河。',
+      dropTitle:'拖放角色圖片', dropSub:'PNG / JPEG — 拖放或點擊瀏覽',
+      awaiting:'等待樣本中',
+      awaitingDesc:'拖入一張圖片即可執行電影級分析：裝甲色盤、角色氛圍、建議武器、稀有度。',
+      analyzing:'角色分析中...', addArchive:'加入檔案庫', registered:'機體已註冊 — 請見角色檔案庫',
+      anPalette:'裝甲色盤', anMood:'角色氛圍', anWeapon:'建議武器', anRole:'電影定位', rarity:'稀有度',
+      slotAvail:'檔案庫尚有空位', specimens:'件樣本已接收',
+      ftProd:'製作', ftWorld:'世界觀', ftTrans:'訊號', ftCopy:'賽博繆斯的電影級檔案庫',
+      tabHome:'首頁', tabArchive:'檔案', tab3d:'3D', tabUpload:'上傳', tabProfile:'個人',
+      adminTitle:'管理後台', adminSub:'限制區域。登入後可管理角色、公開狀態與檔案庫內容。',
+      password:'存取代碼', signIn:'登入', wrongPw:'存取遭拒 — 代碼錯誤',
+      dashTitle:'角色管理', newChar:'新增角色', logout:'登出',
+      edit:'編輯', save:'儲存角色', cancel:'取消',
+      pubOn:'● 公開', pubOff:'○ 隱藏',
+      editNew:'新增角色 — 草稿', editExisting:'編輯角色中',
+      fName:'名稱', fArmor:'裝甲類型', fWeapon:'武器系統', fCore:'能量核心',
+      fDescEn:'電影敘述（英文）', fDescZh:'電影敘述（中文）', fTheme:'主題色',
+      dashNote:'※ 原型資料儲存在瀏覽器。正式版會把這些操作同步到 Supabase Postgres + Storage 並套用 RLS 權限。'
+    }
+  };
+
+  componentDidMount() {
+    // seed characters from storage
+    let db;
+    try { db = JSON.parse(localStorage.getItem(this.LS_KEY) || 'null'); } catch (e) { db = null; }
+    if (!Array.isArray(db) || !db.length) {
+      db = this.DEFAULT_CHARS;
+      try { localStorage.setItem(this.LS_KEY, JSON.stringify(db)); } catch (e) {}
+    }
+    const authed = localStorage.getItem(this.LS_AUTH) === '1';
+    this.setState({ dbChars: db, authed });
+
+    if (this.state.showIntro) this._introT = setTimeout(() => this.setState({ showIntro: false }), 3000);
+    this._heroT = setInterval(() => this.setState(s => ({ heroIdx: (s.heroIdx + 1) % this.HERO_FRAMES.length })), 4200);
+
+    const canvas = this.starsRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      const resize = () => { canvas.width = innerWidth; canvas.height = innerHeight; };
+      resize();
+      this._onResize = resize;
+      addEventListener('resize', resize);
+      this._stars = Array.from({ length: 170 }, () => ({
+        x: Math.random(), y: Math.random(), r: Math.random() * 1.4 + 0.3,
+        s: Math.random() * 0.008 + 0.002, ph: Math.random() * Math.PI * 2,
+        hue: Math.random() < 0.75 ? '210' : '320'
+      }));
+      this._ctx = ctx;
+    }
+    this._rot = -18; this._dragging = false; this._t = 0;
+    const loop = () => {
+      this._t += 0.016;
+      if (!this._dragging && (this.props.autoRotate ?? true)) this._rot += 0.18;
+      const tf = 'rotateY(' + this._rot + 'deg)';
+      if (this.stageRef.current) this.stageRef.current.style.transform = tf;
+      if (this.appStageRef.current) this.appStageRef.current.style.transform = tf;
+      const ctx = this._ctx, cv = this.starsRef.current;
+      if (ctx && cv) {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        for (const st of this._stars) {
+          st.y += st.s * 0.06; if (st.y > 1) st.y = 0;
+          const a = 0.25 + 0.55 * Math.abs(Math.sin(this._t * 0.7 + st.ph));
+          ctx.beginPath();
+          ctx.arc(st.x * cv.width, st.y * cv.height, st.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'hsla(' + st.hue + ',85%,80%,' + a.toFixed(2) + ')';
+          ctx.fill();
+        }
+      }
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+    this._mm = (e) => { if (this._dragging) this._rot = this._base + (e.clientX - this._sx) * 0.5; };
+    this._mu = () => { this._dragging = false; };
+    this._tm = (e) => { if (this._dragging && e.touches[0]) this._rot = this._base + (e.touches[0].clientX - this._sx) * 0.5; };
+    addEventListener('mousemove', this._mm);
+    addEventListener('mouseup', this._mu);
+    addEventListener('touchmove', this._tm);
+    addEventListener('touchend', this._mu);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._introT); clearTimeout(this._anT); clearTimeout(this._sc1); clearTimeout(this._sc2);
+    clearInterval(this._heroT);
+    cancelAnimationFrame(this._raf);
+    removeEventListener('resize', this._onResize);
+    removeEventListener('mousemove', this._mm);
+    removeEventListener('mouseup', this._mu);
+    removeEventListener('touchmove', this._tm);
+    removeEventListener('touchend', this._mu);
+  }
+
+  saveDb(db) {
+    this.setState({ dbChars: db });
+    try { localStorage.setItem(this.LS_KEY, JSON.stringify(db)); } catch (e) {}
+  }
+
+  scrollTo(id) {
+    if (this.state.view !== 'site') { this.setState({ view: 'site' }, () => setTimeout(() => this.scrollTo(id), 60)); return; }
+    const el = document.getElementById(id);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' });
+  }
+
+  selectScene(id) {
+    if (id === this.state.sceneId || this.state.transitioning) return;
+    this.setState({ transitioning: true });
+    this._sc1 = setTimeout(() => this.setState({ sceneId: id }), 430);
+    this._sc2 = setTimeout(() => this.setState({ transitioning: false }), 900);
+  }
+
+  downscale(file, cb) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const max = 900;
+      const sc = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      cb(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = url;
+  }
+
+  handleFiles(files) {
+    const f = files && files[0];
+    if (!f || !f.type || f.type.indexOf('image') !== 0) return;
+    this.downscale(f, (dataUrl) => {
+      const h = (f.name + f.size).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const moods = ['Cold Precision', 'Soft Rebellion', 'Lunar Melancholy', 'Neon Devotion', 'Chrome Serenity'];
+      const roles = ['Opening Frame Heroine', 'Blueprint Oracle', 'Final Act Duelist', 'Cover Muse', 'Silent Sentinel'];
+      const pals = ['Silver Ice — chrome / cyan', 'Pink Nova — gloss / rose', 'Black Galaxy — void / violet', 'White Chrome — pearl / steel'];
+      const rars = ['SR — LIMITED FRAME', 'SSR — PROTOTYPE', 'UR — ONE OF ONE'];
+      const analysis = {
+        palette: pals[h % pals.length], mood: moods[h % moods.length],
+        weapon: this.WEAPONS[h % this.WEAPONS.length].name,
+        role: roles[h % roles.length], rarity: rars[h % rars.length]
+      };
+      this.setState({ uploads: [...this.state.uploads, { url: dataUrl, name: f.name }], analyzing: true, analysis: null, added: false });
+      clearTimeout(this._anT);
+      this._anT = setTimeout(() => this.setState({ analyzing: false, analysis }), 2200);
+    });
+  }
+
+  blankForm() {
+    return { id: null, name: '', armorType: '', weapon: '', core: '', desc: '', descZh: '', accent: '#7dd3fc', isPublic: true, img: '', blueprint: '' };
+  }
+
+  fSet(key) { return (e) => this.setState({ form: { ...this.state.form, [key]: e.target.value } }); }
+
+  renderVals() {
+    const s = this.state;
+    const t = this.T[s.lang];
+    const isApp = s.mode === 'app';
+    const isAdminView = !isApp && s.view === 'admin';
+    const isWebSite = !isApp && s.view === 'site';
+    const dim = 'rgba(232,236,244,0.55)';
+    const zh = s.lang === 'zh';
+
+    const allChars = s.dbChars.length ? s.dbChars : this.DEFAULT_CHARS;
+    const publicChars = allChars.filter(c => c.isPublic !== false);
+    const chars = publicChars.map(c => ({
+      ...c,
+      select: () => this.setState({ activeCharId: c.id }),
+      borderCol: s.activeCharId === c.id ? c.accent : 'rgba(255,255,255,0.12)',
+      glow: c.accent + '44',
+      dotCol: s.activeCharId === c.id ? c.accent : 'rgba(255,255,255,0.18)'
+    }));
+    const acBase = publicChars.find(c => c.id === s.activeCharId) || publicChars[0] || this.DEFAULT_CHARS[0];
+    const ac = { ...acBase, accentSoft: acBase.accent + '55', blueprint: acBase.blueprint || acBase.img };
+    const acRows = [
+      { k: t.fldName, v: ac.name },
+      { k: t.fldArmor, v: ac.armorType },
+      { k: t.fldWeapon, v: ac.weapon },
+      { k: t.fldCore, v: ac.core }
+    ];
+
+    const heroFrame0 = this.HERO_FRAMES[s.heroIdx % this.HERO_FRAMES.length];
+    const heroFrame = { ...heroFrame0, pose: zh ? heroFrame0.poseZh : heroFrame0.pose };
+    const heroDots = this.HERO_FRAMES.map((f, i) => ({
+      select: () => this.setState({ heroIdx: i }),
+      bg: i === s.heroIdx ? '#f9a8d4' : 'rgba(255,255,255,0.25)',
+      w: i === s.heroIdx ? '28px' : '14px'
+    }));
+
+    const scenes = this.SCENES.map(sc => {
+      const active = sc.id === s.sceneId;
+      return { ...sc,
+        select: () => this.selectScene(sc.id),
+        topCol: active ? sc.accent : 'transparent',
+        bg: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+        codeCol: active ? sc.accent : 'rgba(232,236,244,0.35)',
+        labelCol: active ? '#e8ecf4' : 'rgba(232,236,244,0.45)'
+      };
+    });
+    const scene = this.SCENES.find(sc => sc.id === s.sceneId) || this.SCENES[0];
+
+    const pal = this.PALETTES.find(p => p.id === s.paletteId) || this.PALETTES[0];
+    const accent = pal.c1;
+    const palettes = this.PALETTES.map(p => ({ ...p,
+      name: zh ? p.nameZh : p.name,
+      select: () => this.setState({ paletteId: p.id }),
+      ring: p.id === s.paletteId ? '0 0 0 3px #04050d, 0 0 0 5px ' + p.c1 + ', 0 0 22px ' + p.c1 : '0 0 0 1px rgba(255,255,255,0.25)',
+      labelCol: p.id === s.paletteId ? p.c1 : dim
+    }));
+
+    const weapons = this.WEAPONS.map(w => {
+      const active = w.id === s.weaponId;
+      return { ...w,
+        select: () => this.setState({ weaponId: w.id }),
+        borderCol: active ? accent : 'rgba(255,255,255,0.12)',
+        bg: active ? (accent + '14') : 'rgba(255,255,255,0.02)',
+        nameCol: active ? accent : '#e8ecf4',
+        tagCol: active ? accent : 'rgba(232,236,244,0.4)',
+        pct: w.pct + '%'
+      };
+    });
+    const wp = this.WEAPONS.find(w => w.id === s.weaponId) || this.WEAPONS[0];
+
+    const parts = this.PARTS.map(p => {
+      const active = p.id === s.partId;
+      return { ...p,
+        select: () => this.setState({ partId: p.id }),
+        borderCol: active ? 'rgba(125,211,252,0.5)' : 'rgba(255,255,255,0.1)',
+        leftCol: active ? '#7dd3fc' : 'rgba(255,255,255,0.15)',
+        bg: active ? 'rgba(125,211,252,0.08)' : 'rgba(255,255,255,0.02)',
+        idxCol: active ? '#7dd3fc' : 'rgba(232,236,244,0.35)',
+        nameCol: active ? '#e8ecf4' : 'rgba(232,236,244,0.55)'
+      };
+    });
+    const part = this.PARTS.find(p => p.id === s.partId) || this.PARTS[0];
+    const hotspots = this.PARTS.map(p => ({ ...p,
+      select: () => this.setState({ partId: p.id }),
+      col: p.id === s.partId ? '#f9a8d4' : '#7dd3fc',
+      fill: p.id === s.partId ? 'rgba(249,168,212,0.5)' : 'rgba(125,211,252,0.25)'
+    }));
+
+    const lastUpload = s.uploads[s.uploads.length - 1];
+    const analysisRows = s.analysis ? [
+      { k: t.anPalette, v: s.analysis.palette },
+      { k: t.anMood, v: s.analysis.mood },
+      { k: t.anWeapon, v: s.analysis.weapon },
+      { k: t.anRole, v: s.analysis.role }
+    ] : [];
+
+    // admin
+    const adminRows = allChars.map(c => ({
+      ...c,
+      img: c.img,
+      borderCol: 'rgba(255,255,255,0.12)',
+      pubLabel: c.isPublic !== false ? t.pubOn : t.pubOff,
+      pubCol: c.isPublic !== false ? '#7dd3fc' : 'rgba(232,236,244,0.4)',
+      pubBorder: c.isPublic !== false ? 'rgba(125,211,252,0.5)' : 'rgba(255,255,255,0.15)',
+      pubBg: c.isPublic !== false ? 'rgba(125,211,252,0.1)' : 'transparent',
+      togglePublic: () => this.saveDb(allChars.map(x => x.id === c.id ? { ...x, isPublic: !(x.isPublic !== false) } : x)),
+      edit: () => this.setState({ editingId: c.id, form: { ...this.blankForm(), ...c } }),
+      remove: () => { this.saveDb(allChars.filter(x => x.id !== c.id)); if (s.editingId === c.id) this.setState({ editingId: null, form: null }); }
+    }));
+    const form = s.form || this.blankForm();
+    const isEditing = s.editingId !== null || !!s.form;
+    const formAccents = this.ACCENTS.map(c => ({
+      c,
+      select: () => this.setState({ form: { ...form, accent: c } }),
+      ring: form.accent === c ? '0 0 0 2px #04050d, 0 0 0 4px ' + c : '0 0 0 1px rgba(255,255,255,0.2)'
+    }));
+
+    const TABS = [
+      { id: 'home', label: t.tabHome, glyph: '⌂' },
+      { id: 'archive', label: t.tabArchive, glyph: '▦' },
+      { id: '3d', label: t.tab3d, glyph: '◇' },
+      { id: 'upload', label: t.tabUpload, glyph: '↥' },
+      { id: 'profile', label: t.tabProfile, glyph: '◉' }
+    ];
+    const appTabs = TABS.map(tb => ({ ...tb,
+      select: () => this.setState({ appTab: tb.id }),
+      col: s.appTab === tb.id ? '#7dd3fc' : 'rgba(232,236,244,0.4)',
+      barCol: s.appTab === tb.id ? '#7dd3fc' : 'transparent'
+    }));
+
+    return {
+      t,
+      starsRef: this.starsRef, stageRef: this.stageRef, appStageRef: this.appStageRef,
+      fileRef: this.fileRef, formFileRef: this.formFileRef,
+      showIntro: s.showIntro,
+      isApp, isAdminView, isWebSite,
+      showNav: !isApp,
+      langLabel: zh ? 'EN' : '中文',
+      toggleLang: () => this.setState({ lang: zh ? 'en' : 'zh' }),
+      modeBtns: [
+        { label: t.web, select: () => this.setState({ mode: 'web' }), bg: !isApp ? 'rgba(125,211,252,0.2)' : 'transparent', col: !isApp ? '#7dd3fc' : 'rgba(232,236,244,0.5)' },
+        { label: t.app, select: () => this.setState({ mode: 'app' }), bg: isApp ? 'rgba(249,168,212,0.2)' : 'transparent', col: isApp ? '#f9a8d4' : 'rgba(232,236,244,0.5)' }
+      ],
+      navItems: [
+        { label: t.navArchive, go: () => this.scrollTo('archive'), col: 'rgba(232,236,244,0.6)' },
+        { label: t.navStoryboard, go: () => this.scrollTo('storyboard'), col: 'rgba(232,236,244,0.6)' },
+        { label: t.navLoadout, go: () => this.scrollTo('loadout'), col: 'rgba(232,236,244,0.6)' },
+        { label: t.navShowroom, go: () => this.scrollTo('showroom'), col: 'rgba(232,236,244,0.6)' },
+        { label: t.navUpload, go: () => this.scrollTo('upload'), col: 'rgba(232,236,244,0.6)' },
+        { label: '⚙ ' + t.navAdmin, go: () => this.setState({ view: 'admin', mode: 'web' }), col: s.view === 'admin' ? '#f9a8d4' : 'rgba(249,168,212,0.7)' }
+      ],
+      goHome: () => { this.setState({ view: 'site' }); window.scrollTo({ top: 0, behavior: 'smooth' }); },
+      goArchive: () => this.scrollTo('archive'),
+      goShowroom: () => this.scrollTo('showroom'),
+      goUpload: () => this.scrollTo('upload'),
+      heroFrame, heroDots, heroPoseKey: heroFrame.id + s.lang,
+      chars, ac, acRows, acFeatures: ac.features || [],
+      acDesc: zh && ac.descZh ? ac.descZh : ac.desc,
+      scenes, scene, sceneSub: zh ? scene.subZh : scene.sub, transitioning: s.transitioning,
+      weapons, palettes,
+      accent, accentSoft: accent + '44', accentBorder: accent + '66', accentGlow: accent + '22', accentTint: accent + '26',
+      weaponName: wp.name, weaponDesc: zh ? wp.descZh : wp.desc, weaponStat: wp.stat, paletteName: zh ? pal.nameZh : pal.name,
+      parts, part, partDesc: zh ? part.descZh : part.desc, hotspots,
+      stageDown: (e) => { this._dragging = true; this._sx = e.clientX; this._base = this._rot; },
+      stageTouch: (e) => { if (e.touches[0]) { this._dragging = true; this._sx = e.touches[0].clientX; this._base = this._rot; } },
+      pickFile: () => { if (this.fileRef.current) this.fileRef.current.click(); },
+      dragOver: (e) => e.preventDefault(),
+      dropFile: (e) => { e.preventDefault(); e.stopPropagation(); this.handleFiles(e.dataTransfer.files); },
+      fileChange: (e) => this.handleFiles(e.target.files),
+      hasUpload: !!lastUpload, noUpload: !lastUpload,
+      uploadUrl: lastUpload ? lastUpload.url : '',
+      uploadCountLabel: s.uploads.length ? s.uploads.length + ' ' + t.specimens : t.slotAvail,
+      analyzing: s.analyzing,
+      analysisDone: !!s.analysis && !s.analyzing,
+      analysisRows, analysisRarity: s.analysis ? s.analysis.rarity : '',
+      notAdded: !s.added, wasAdded: s.added,
+      addToArchive: () => {
+        if (!lastUpload || !s.analysis) return;
+        const n = allChars.length + 1;
+        const nc = {
+          id: 'custom-' + Date.now(), name: 'CUSTOM MUSE ' + (n < 10 ? '0' + n : n), code: 'UNIT-' + (n < 10 ? '0' + n : n),
+          accent, isPublic: true, armorType: s.analysis.palette, weapon: s.analysis.weapon,
+          core: 'Unclassified Core', img: lastUpload.url, blueprint: lastUpload.url,
+          desc: 'Uploaded via the Character Lab. ' + s.analysis.mood + ' registered on first scan. Assigned cinematic role: ' + s.analysis.role.toLowerCase() + '. Rarity ' + s.analysis.rarity + '.',
+          descZh: '經由角色實驗室上傳。首次掃描登錄氛圍：' + s.analysis.mood + '。電影定位：' + s.analysis.role + '。稀有度 ' + s.analysis.rarity + '。',
+          features: [s.analysis.mood, s.analysis.role, s.analysis.rarity]
+        };
+        this.saveDb([...allChars, nc]);
+        this.setState({ activeCharId: nc.id, added: true });
+        if (isWebSite) this.scrollTo('archive');
+      },
+      unitCount: (publicChars.length < 10 ? '0' : '') + publicChars.length,
+      appGoArchive: () => this.setState({ appTab: 'archive' }),
+      tabHome: isApp && s.appTab === 'home',
+      tabArchive: isApp && s.appTab === 'archive',
+      tab3d: isApp && s.appTab === '3d',
+      tabUpload: isApp && s.appTab === 'upload',
+      tabProfile: isApp && s.appTab === 'profile',
+      // admin
+      notAuthed: !s.authed, authed: s.authed,
+      loginPw: s.loginPw,
+      setLoginPw: (e) => this.setState({ loginPw: e.target.value, loginErr: false }),
+      loginKey: (e) => { if (e.key === 'Enter') this.tryLogin(); },
+      doLogin: () => this.tryLogin(),
+      loginErr: s.loginErr,
+      doLogout: () => { localStorage.setItem(this.LS_AUTH, '0'); this.setState({ authed: false, loginPw: '' }); },
+      dashCols: isEditing ? '1.1fr 0.9fr' : '1fr',
+      adminRows,
+      newChar: () => this.setState({ editingId: null, form: this.blankForm() }),
+      isEditing,
+      editHeading: form.id ? t.editExisting + ' — ' + form.name : t.editNew,
+      formHasImg: !!form.img, formImg: form.img,
+      pickFormImg: () => { if (this.formFileRef.current) this.formFileRef.current.click(); },
+      formImgChange: (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (f) this.downscale(f, (d) => this.setState({ form: { ...this.state.form, img: d, blueprint: d } }));
+      },
+      formName: form.name, setFormName: this.fSet('name'),
+      formArmor: form.armorType, setFormArmor: this.fSet('armorType'),
+      formWeapon: form.weapon, setFormWeapon: this.fSet('weapon'),
+      formCore: form.core, setFormCore: this.fSet('core'),
+      formDesc: form.desc, setFormDesc: this.fSet('desc'),
+      formDescZh: form.descZh, setFormDescZh: this.fSet('descZh'),
+      formAccents,
+      formPubLabel: form.isPublic ? t.pubOn : t.pubOff,
+      formPubCol: form.isPublic ? '#7dd3fc' : 'rgba(232,236,244,0.4)',
+      formPubBorder: form.isPublic ? 'rgba(125,211,252,0.5)' : 'rgba(255,255,255,0.15)',
+      formPubBg: form.isPublic ? 'rgba(125,211,252,0.1)' : 'transparent',
+      toggleFormPublic: () => this.setState({ form: { ...form, isPublic: !form.isPublic } }),
+      saveChar: () => {
+        if (!form.name.trim()) return;
+        let db;
+        if (form.id) {
+          db = allChars.map(x => x.id === form.id ? { ...x, ...form } : x);
+        } else {
+          const n = allChars.length + 1;
+          db = [...allChars, { ...form, id: 'char-' + Date.now(), code: 'UNIT-' + (n < 10 ? '0' + n : n), features: [], img: form.img || 'assets/silver-blueprint.jpeg', blueprint: form.blueprint || form.img || 'assets/silver-blueprint.jpeg' }];
+        }
+        this.saveDb(db);
+        this.setState({ editingId: null, form: null });
+      },
+      cancelEdit: () => this.setState({ editingId: null, form: null })
+    };
+  }
+
+  tryLogin() {
+    if (this.state.loginPw === 'muse2077') {
+      localStorage.setItem(this.LS_AUTH, '1');
+      this.setState({ authed: true, loginErr: false });
+    } else {
+      this.setState({ loginErr: true });
+    }
+  }
+}
+</script>
+</body>
+</html>
