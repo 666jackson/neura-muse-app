@@ -37,28 +37,38 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="min-h-screen grid lg:grid-cols-2 items-center gap-12 px-8 lg:px-20 pt-32 pb-16 max-w-7xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background cover image */}
+        {active && (
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute inset-0 z-0"
+          >
+            <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-ink/60 to-ink" />
+            <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-transparent to-ink/80" />
+          </motion.div>
+        )}
+
+        {/* Foreground content */}
+        <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}
+          className="relative z-10 text-center px-8 lg:px-20 pt-32 pb-16 max-w-3xl mx-auto">
           <div className="text-ice font-mono text-xs tracking-[0.4em] mb-6">{t.heroEyebrow}</div>
           <h1 className="font-display text-5xl lg:text-7xl tracking-widest mb-8">NEURA MUSE</h1>
-          <p className="text-chrome/60 font-light leading-relaxed max-w-md mb-10">{t.heroDesc}</p>
-          <div className="flex flex-wrap gap-4">
+          <p className="text-chrome/70 font-light leading-relaxed max-w-md mx-auto mb-10">{t.heroDesc}</p>
+          {active && (
+            <div className="mb-10">
+              <div className="font-mono text-[10px] tracking-[0.3em] text-ice mb-1">FASHION MOTION REEL</div>
+              <div className="font-display tracking-[0.2em] text-lg">{active.name}</div>
+            </div>
+          )}
+          <div className="flex flex-wrap justify-center gap-4">
             <a href="#archive" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg bg-gradient-to-r from-ice to-nova text-ink">{t.ctaEnter}</a>
             <a href="#showroom" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">{t.cta3d}</a>
             <a href="#lab" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-nova/50 text-nova hover:bg-nova/10 transition">{t.ctaUpload}</a>
           </div>
         </motion.div>
-        {active && (
-          <motion.div animate={{ y: [0, -14, 0] }} transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-            className="relative aspect-[3/4] max-w-md mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-[0_0_60px_rgba(125,211,252,0.18)]">
-            <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-b from-ink/25 via-transparent to-ink/90" />
-            <div className="absolute bottom-6 left-6">
-              <div className="font-mono text-[10px] tracking-[0.3em] text-ice mb-2">FASHION MOTION REEL</div>
-              <div className="font-display tracking-[0.2em] text-lg">{active.name}</div>
-            </div>
-          </motion.div>
-        )}
       </section>
 
       <section id="archive" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
