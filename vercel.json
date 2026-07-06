@@ -1,11 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/prototypes/Neura%20Muse.dc.html",
-      "permanent": false
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",

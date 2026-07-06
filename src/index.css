@@ -4,3 +4,36 @@
 
 body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grotesk', 'Noto Sans TC', sans-serif; }
 ::selection { background: rgba(125, 211, 252, 0.35); }
+
+/* ============ CINEMATIC BACKGROUND (ported + refined from prototype) ============ */
+@keyframes nmScan   { 0% { transform: translateY(-140%); } 100% { transform: translateY(840%); } }
+@keyframes nmFlicker{ 0%,100% { opacity: .85; } 92% { opacity: .85; } 93% { opacity: .38; } 95% { opacity: .82; } 97% { opacity: .55; } 98% { opacity: .8; } }
+@keyframes nmPulse  { 0%,100% { opacity: .45; transform: translate3d(0,0,0) scale(1); } 50% { opacity: .8; transform: translate3d(2%,-3%,0) scale(1.1); } }
+@keyframes nmPulse2 { 0%,100% { opacity: .4; transform: translate3d(0,0,0) scale(1.05); } 50% { opacity: .7; transform: translate3d(-3%,2%,0) scale(1); } }
+@keyframes nmKen    { 0% { transform: scale(1.05); } 100% { transform: scale(1.16); } }
+@keyframes nmGridDrift { 0% { background-position: 0 0; } 100% { background-position: 0 44px; } }
+
+.nm-scanline {
+  position: absolute; left: 0; right: 0; height: 22%;
+  background: linear-gradient(to bottom, transparent, rgba(125,211,252,0.16), transparent);
+  mix-blend-mode: screen; pointer-events: none;
+  animation: nmScan 7s linear infinite;
+}
+.nm-flicker { animation: nmFlicker 6s steps(1) infinite; }
+.nm-grid {
+  background-image:
+    linear-gradient(rgba(125,211,252,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125,211,252,0.07) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse at 50% 42%, #000 10%, transparent 72%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 42%, #000 10%, transparent 72%);
+  animation: nmGridDrift 12s linear infinite;
+}
+.nm-orb-a { animation: nmPulse 11s ease-in-out infinite; }
+.nm-orb-b { animation: nmPulse2 14s ease-in-out infinite; }
+.nm-ken   { animation: nmKen 18s ease-in-out infinite alternate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nm-scanline, .nm-flicker, .nm-grid, .nm-orb-a, .nm-orb-b, .nm-ken { animation: none !important; }
+  .nm-scanline { display: none; }
+}

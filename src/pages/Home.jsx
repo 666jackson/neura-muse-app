@@ -41,39 +41,51 @@ export default function Home() {
         </div>
       </header>
 
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background cover image */}
+      <section className="relative min-h-screen flex items-center overflow-hidden">
+        {/* Ambient sci-fi field across the WHOLE hero — keeps left & right unified so the reel never reads as a hard split */}
+        <div className="absolute inset-0 z-0 nm-grid pointer-events-none" />
+        <div className="pointer-events-none absolute top-1/4 right-1/4 w-[38rem] h-[38rem] rounded-full z-0 nm-orb-a"
+          style={{ background: 'radial-gradient(circle, rgba(125,211,252,0.16), transparent 65%)' }} />
+        <div className="pointer-events-none absolute bottom-4 right-1/3 w-[30rem] h-[30rem] rounded-full z-0 nm-orb-b"
+          style={{ background: 'radial-gradient(circle, rgba(249,168,212,0.12), transparent 65%)' }} />
+
+        {/* Character reel — anchored to the RIGHT, then melted leftward into the ambient field (no visible seam) */}
         {active && (
-          <motion.div
-            animate={{ scale: [1, 1.06, 1] }}
-            transition={{ duration: 16, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 z-0"
-          >
-            {active.video_url ? (
-              <video src={active.video_url} autoPlay muted loop playsInline
-                poster={active.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
-            ) : (
-              <img src={active.cover_image_url} alt={active.name} className="absolute inset-0 w-full h-full object-cover" />
-            )}
-            {/* Soft fade only — no frame; the reel fills the screen and blends into the page below */}
-            <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink" />
-          </motion.div>
+          <div className="absolute inset-y-0 right-0 w-full sm:w-[74%] lg:w-[58%] z-0">
+            <div className="absolute inset-0 nm-ken">
+              {active.video_url ? (
+                <video src={active.video_url} autoPlay muted loop playsInline
+                  poster={active.cover_image_url} className="absolute inset-0 w-full h-full object-cover object-[60%_center]" />
+              ) : (
+                <img src={active.cover_image_url} alt={active.name} className="absolute inset-0 w-full h-full object-cover object-[60%_center]" />
+              )}
+            </div>
+
+            {/* Cinematic flicker (ported + refined from the prototype) */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none nm-flicker">
+              <div className="nm-scanline" />
+            </div>
+
+            {/* Long left fade — dissolves the reel's left edge into the ambient so it feels like one continuous scene */}
+            <div className="absolute inset-y-0 left-0 w-2/3 bg-gradient-to-r from-ink via-ink/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-transparent to-ink/20" />
+          </div>
         )}
 
-        {/* Foreground content */}
+        {/* Left-side title text */}
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }}
-          style={{ textShadow: '0 2px 34px rgba(4,5,13,0.9)' }}
-          className="relative z-10 text-center px-8 lg:px-20 pt-32 pb-16 max-w-3xl mx-auto">
+          style={{ textShadow: '0 2px 34px rgba(4,5,13,0.95)' }}
+          className="relative z-10 w-full max-w-xl lg:max-w-2xl px-8 lg:px-20 pt-32 pb-16 text-left">
           <div className="text-ice font-mono text-xs tracking-[0.4em] mb-6">{t.heroEyebrow}</div>
           <h1 className="font-display text-5xl lg:text-7xl tracking-widest mb-8">NEURA MUSE</h1>
-          <p className="text-chrome/70 font-light leading-relaxed max-w-md mx-auto mb-10">{t.heroDesc}</p>
+          <p className="text-chrome/70 font-light leading-relaxed max-w-md mb-10">{t.heroDesc}</p>
           {active && (
             <div className="mb-10">
               <div className="font-mono text-[10px] tracking-[0.3em] text-ice mb-1">FASHION MOTION REEL</div>
               <div className="font-display tracking-[0.2em] text-lg">{active.name}</div>
             </div>
           )}
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap gap-4">
             <a href="#archive" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg bg-gradient-to-r from-ice to-nova text-ink">{t.ctaEnter}</a>
             <a href="#showroom" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">{t.cta3d}</a>
             <a href="#lab" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-nova/50 text-nova hover:bg-nova/10 transition">{t.ctaUpload}</a>
