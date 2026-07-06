@@ -19,6 +19,28 @@ export default function Home() {
   const [soundtrack, setSoundtrack] = React.useState(null);
   const [playing, setPlaying] = React.useState(false);
   const audioRef = React.useRef(null);
+  const seqRef = React.useRef(null); // incrementing number for uploaded "CUSTOM MUSE" cards
+
+  // Add an uploaded specimen to the on-screen archive (client-side; public visitors can't write to the DB).
+  const addMuse = (analysis, imageUrl) => {
+    if (seqRef.current === null) seqRef.current = characters.length;
+    seqRef.current += 1;
+    const n = seqRef.current;
+    const nc = {
+      id: 'custom-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      name: 'CUSTOM MUSE ' + (n < 10 ? '0' + n : n),
+      cover_image_url: imageUrl,
+      video_url: null,
+      armor_type: analysis.palette,
+      weapon_system: analysis.weapon,
+      energy_core: 'Unclassified Core',
+      rarity_level: analysis.rarity,
+      color_theme: '#7dd3fc',
+      cinematic_description: analysis.mood + ' · ' + analysis.role + ' · ' + analysis.rarity
+    };
+    setCharacters((prev) => [...prev, nc]);
+    setActive(nc);
+  };
 
   React.useEffect(() => {
     fetchPublicCharacters()
@@ -90,9 +112,9 @@ export default function Home() {
 
         {/* Center section nav */}
         <nav className="hidden md:flex items-center gap-7 font-mono text-[11px] tracking-[0.25em] text-chrome/60">
-          <a href="#lab" className="hover:text-ice transition">{t.navUpload}</a>
-          <a href="#archive" className="hover:text-ice transition">{t.navArchive}</a>
           <a href="#videos" className="hover:text-ice transition">{t.navVideos}</a>
+          <a href="#archive" className="hover:text-ice transition">{t.navArchive}</a>
+          <a href="#lab" className="hover:text-ice transition">{t.navUpload}</a>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -172,11 +194,30 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ===== UPLOAD LAB — right on the main screen so anyone can upload immediately ===== */}
-      <section id="lab" className="max-w-5xl mx-auto px-8 lg:px-20 py-24">
-        <h2 className="font-display tracking-[0.25em] text-2xl mb-3">{t.secLab}</h2>
-        <p className="font-light text-chrome/60 mb-10 max-w-xl">{t.heroDesc}</p>
-        <UploadLab lang={lang} />
+      {/* ===== MOTION VIDEO REELS — full-bleed, right under the hero (replaces the old 3D showroom) ===== */}
+      <section id="videos" className="w-full px-4 sm:px-6 lg:px-8 py-24">
+        <h2 className="font-display tracking-[0.25em] text-2xl mb-10 px-2 lg:px-4">{t.secVideos}</h2>
+        {videos.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            {videos.map((v) => (
+              <motion.div key={v.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="rounded-2xl border border-white/12 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
+                <div className="relative bg-ink aspect-video">
+                  <video src={v.video_url} controls playsInline muted loop poster={v.poster_url || undefined}
+                    className="w-full h-full object-cover" />
+                </div>
+                <div className="p-5">
+                  <div className="font-display text-base tracking-[0.2em] mb-2">{v.title}</div>
+                  {v.description && <p className="font-light text-sm leading-relaxed text-chrome/60">{v.description}</p>}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-white/15 py-24 text-center font-mono text-[11px] tracking-[0.4em] text-chrome/35">
+            {t.noVideos}
+          </div>
+        )}
       </section>
 
       <section id="archive" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
@@ -215,30 +256,11 @@ export default function Home() {
         )}
       </section>
 
-      {/* ===== MOTION VIDEO REELS — replaces the old 3D showroom ===== */}
-      <section id="videos" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
-        <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secVideos}</h2>
-        {videos.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {videos.map((v) => (
-              <motion.div key={v.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="rounded-2xl border border-white/12 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
-                <div className="relative bg-ink aspect-video">
-                  <video src={v.video_url} controls playsInline muted loop poster={v.poster_url || undefined}
-                    className="w-full h-full object-cover" />
-                </div>
-                <div className="p-5">
-                  <div className="font-display text-sm tracking-[0.2em] mb-2">{v.title}</div>
-                  {v.description && <p className="font-light text-sm leading-relaxed text-chrome/60">{v.description}</p>}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-white/15 py-24 text-center font-mono text-[11px] tracking-[0.4em] text-chrome/35">
-            {t.noVideos}
-          </div>
-        )}
+      {/* ===== UPLOAD LAB — moved to the bottom; supports many images at once ===== */}
+      <section id="lab" className="max-w-5xl mx-auto px-8 lg:px-20 py-24">
+        <h2 className="font-display tracking-[0.25em] text-2xl mb-3">{t.secLab}</h2>
+        <p className="font-light text-chrome/60 mb-10 max-w-xl">{t.heroDesc}</p>
+        <UploadLab lang={lang} onAdd={addMuse} />
       </section>
 
       {/* ===== BACKGROUND SOUNDTRACK — floating play / pause toggle ===== */}
