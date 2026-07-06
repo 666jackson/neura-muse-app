@@ -61,7 +61,7 @@ export default function AdminDashboard({ session }) {
         const f = files[i];
         const url = await uploadAsset('characters', f, 'covers/');
         n += 1;
-        await upsertCharacter(characterFromAnalysis(analyzeFile(f), url, n));
+        await upsertCharacter({ ...characterFromAnalysis(analyzeFile(f), url, n), order_index: n });
         setProgress({ done: i + 1, total: files.length });
       }
       setRows(await fetchAllCharacters());
@@ -89,10 +89,27 @@ export default function AdminDashboard({ session }) {
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
+  // ---- drag-to-reorder ----
+  const dragIndex = React.useRef(null);
+  const reorder = async (from, to) => {
+    if (from == null || to == null || from === to) return;
+    const next = [...rows];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setRows(next); // optimistic
+    try {
+      await Promise.all(next.map((r, idx) => upsertCharacter({ ...r, order_index: idx })));
+    } catch (err) { setError(err.message); setRows(await fetchAllCharacters()); }
+  };
+
   const save = async () => {
     setBusy(true); setError(null);
     try {
-      const payload = { ...form, slug: form.slug || form.name.toLowerCase().replace(/\s+/g, '-') };
+      const payload = {
+        ...form,
+        slug: form.slug || form.name.toLowerCase().replace(/\s+/g, '-'),
+        order_index: form.order_index ?? rows.length
+      };
       await upsertCharacter(payload);
       setRows(await fetchAllCharacters());
       setForm(null);
@@ -137,8 +154,14 @@ export default function AdminDashboard({ session }) {
 
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         <div className="flex flex-col gap-3">
-          {rows.map((r) => (
-            <div key={r.id} className="flex items-center gap-4 rounded-xl border border-white/12 bg-white/[0.03] p-3">
+          {rows.map((r, i) => (
+            <div key={r.id}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => { reorder(dragIndex.current, i); dragIndex.current = null; }}
+              className="flex items-center gap-3 rounded-xl border border-white/12 bg-white/[0.03] p-3">
+              <span draggable onDragStart={() => (dragIndex.current = i)}
+                title="Drag to reorder"
+                className="cursor-grab active:cursor-grabbing select-none px-1 text-chrome/40 hover:text-ice text-lg leading-none">⠿</span>
               {r.cover_image_url && <img src={r.cover_image_url} alt="" className="w-12 h-16 object-cover rounded-lg border border-white/10" />}
               <div className="flex-1 min-w-0">
                 <div className="font-display text-xs tracking-widest mb-1">{r.name}</div>

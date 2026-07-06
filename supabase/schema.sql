@@ -19,6 +19,7 @@ create table if not exists public.characters (
   cinematic_description text,
   color_theme text default '#7dd3fc',
   rarity_level text default 'SR',
+  order_index int not null default 0,
   is_public boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -168,6 +169,7 @@ create trigger videos_touch before update on public.videos
 -- ============ MIGRATION (existing databases) ============
 -- Safe to re-run; adds the video columns + bucket to an already-provisioned DB.
 alter table public.characters add column if not exists video_url text;
+alter table public.characters add column if not exists order_index int not null default 0;
 
 insert into storage.buckets (id, name, public) values ('videos', 'videos', true)
 on conflict (id) do nothing;

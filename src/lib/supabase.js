@@ -15,6 +15,7 @@ export async function fetchPublicCharacters() {
     .from('characters')
     .select('*')
     .eq('is_public', true)
+    .order('order_index', { ascending: true })
     .order('created_at', { ascending: true });
   if (error) throw error;
   return data;
@@ -24,6 +25,7 @@ export async function fetchAllCharacters() {
   const { data, error } = await supabase
     .from('characters')
     .select('*')
+    .order('order_index', { ascending: true })
     .order('created_at', { ascending: true });
   if (error) throw error;
   return data;

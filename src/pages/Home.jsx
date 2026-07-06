@@ -42,6 +42,25 @@ export default function Home() {
     setActive(nc);
   };
 
+  // ---- video playlist: only 2 slots on screen; when both finish, advance to the next pair ----
+  const [pairStart, setPairStart] = React.useState(0);
+  const endedRef = React.useRef([false, false]);
+
+  React.useEffect(() => { setPairStart(0); endedRef.current = [false, false]; }, [videos.length]);
+
+  const onSlotEnded = (slot) => {
+    endedRef.current[slot] = true;
+    if (endedRef.current[0] && endedRef.current[1]) {
+      endedRef.current = [false, false];
+      setPairStart((p) => (p + 2) % videos.length);
+    }
+  };
+
+  const rotateVideos = videos.length > 2;
+  const videoSlots = rotateVideos
+    ? [videos[pairStart % videos.length], videos[(pairStart + 1) % videos.length]]
+    : videos;
+
   React.useEffect(() => {
     fetchPublicCharacters()
       .then((rows) => { setCharacters(rows); setActive(rows[0] || null); })
@@ -198,10 +217,13 @@ export default function Home() {
       {videos.length > 0 && (
         <section id="videos" className="w-full px-4 sm:px-6 lg:px-10 py-20">
           <div className="grid gap-x-8 gap-y-10 md:grid-cols-2">
-            {videos.map((v) => (
-              <motion.div key={v.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+            {videoSlots.map((v, slot) => (
+              <motion.div key={slot + '-' + v.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 transition={{ duration: 1 }} className="relative aspect-[2/3]">
-                <video src={v.video_url} autoPlay muted loop playsInline poster={v.poster_url || undefined}
+                <video key={v.id} src={v.video_url} autoPlay muted playsInline
+                  loop={!rotateVideos}
+                  onEnded={rotateVideos ? () => onSlotEnded(slot) : undefined}
+                  poster={v.poster_url || undefined}
                   className="w-full h-full object-cover object-top" />
                 {/* vignette that melts the video edges into the ink background */}
                 <div className="pointer-events-none absolute inset-0"
