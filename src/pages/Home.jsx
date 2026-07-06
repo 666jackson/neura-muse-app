@@ -138,9 +138,9 @@ export default function Home() {
                 <div className="absolute inset-0 nm-ken">
                   {heroItem.video_url ? (
                     <video src={heroItem.video_url} autoPlay muted loop playsInline
-                      poster={heroItem.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
+                      poster={heroItem.cover_image_url} className="absolute inset-0 w-full h-full object-cover object-top" />
                   ) : (
-                    <img src={heroItem.cover_image_url} alt={heroItem.name} className="absolute inset-0 w-full h-full object-cover" />
+                    <img src={heroItem.cover_image_url} alt={heroItem.name} className="absolute inset-0 w-full h-full object-cover object-top" />
                   )}
                 </div>
               </motion.div>
@@ -149,7 +149,7 @@ export default function Home() {
             {/* RGB-split glitch flash (chromatic aberration duplicate of the cover) */}
             {heroItem.cover_image_url && (
               <img src={heroItem.cover_image_url} alt="" aria-hidden
-                className="absolute inset-0 w-full h-full object-cover nm-glitch"
+                className="absolute inset-0 w-full h-full object-cover object-top nm-glitch"
                 style={{ filter: 'hue-rotate(150deg) saturate(4)' }} />
             )}
 
@@ -200,9 +200,9 @@ export default function Home() {
           <div className="grid gap-x-8 gap-y-10 md:grid-cols-2">
             {videos.map((v) => (
               <motion.div key={v.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-                transition={{ duration: 1 }} className="relative aspect-video">
+                transition={{ duration: 1 }} className="relative aspect-[2/3]">
                 <video src={v.video_url} autoPlay muted loop playsInline poster={v.poster_url || undefined}
-                  className="w-full h-full object-cover" />
+                  className="w-full h-full object-cover object-top" />
                 {/* vignette that melts the video edges into the ink background */}
                 <div className="pointer-events-none absolute inset-0"
                   style={{ boxShadow: 'inset 0 0 90px 26px rgba(4,5,13,0.95)' }} />
