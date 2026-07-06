@@ -1,10 +1,9 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchPublicCharacters, fetchPublicVideos } from '../lib/supabase.js';
+import { fetchPublicCharacters, fetchPublicVideos, fetchPublicSoundtrack } from '../lib/supabase.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import UploadLab from '../components/UploadLab.jsx';
-import Showroom3D from '../components/Showroom3D.jsx';
-import { T } from '../i18n.js';
+import { T, NEXT_LANG_LABEL, nextLang } from '../i18n.js';
 
 export default function Home() {
   const [lang, setLang] = React.useState(localStorage.getItem('nm_lang') || 'en');
@@ -16,6 +15,11 @@ export default function Home() {
   const [showIntro, setShowIntro] = React.useState(true);
   const [heroIdx, setHeroIdx] = React.useState(0);
 
+  // ---- background soundtrack ----
+  const [soundtrack, setSoundtrack] = React.useState(null);
+  const [playing, setPlaying] = React.useState(false);
+  const audioRef = React.useRef(null);
+
   React.useEffect(() => {
     fetchPublicCharacters()
       .then((rows) => { setCharacters(rows); setActive(rows[0] || null); })
@@ -23,7 +27,17 @@ export default function Home() {
     fetchPublicVideos()
       .then(setVideos)
       .catch(() => {}); // videos are optional; ignore if the table isn't provisioned yet
+    fetchPublicSoundtrack()
+      .then(setSoundtrack)
+      .catch(() => {}); // soundtrack is optional
   }, []);
+
+  const toggleMusic = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (el.paused) { el.play().then(() => setPlaying(true)).catch(() => {}); }
+    else { el.pause(); setPlaying(false); }
+  };
 
   // Boot sequence — plays on load, then reveals the main screen
   React.useEffect(() => {
@@ -45,7 +59,7 @@ export default function Home() {
   const marqueeText = `   ${marqueeBase}   ·   NEURA MUSE   ·   SECTOR 07   `.repeat(3);
 
   const toggleLang = () => {
-    const next = lang === 'en' ? 'zh' : 'en';
+    const next = nextLang(lang);
     localStorage.setItem('nm_lang', next);
     setLang(next);
   };
@@ -76,15 +90,14 @@ export default function Home() {
 
         {/* Center section nav */}
         <nav className="hidden md:flex items-center gap-7 font-mono text-[11px] tracking-[0.25em] text-chrome/60">
+          <a href="#lab" className="hover:text-ice transition">{t.navUpload}</a>
           <a href="#archive" className="hover:text-ice transition">{t.navArchive}</a>
-          <a href="#showroom" className="hover:text-ice transition">{t.navShowroom}</a>
           <a href="#videos" className="hover:text-ice transition">{t.navVideos}</a>
-          <a href="#lab" className="hover:text-ice transition">{t.navLab}</a>
         </nav>
 
         <div className="flex items-center gap-3">
           <button onClick={toggleLang} className="text-xs font-mono tracking-widest border border-white/20 rounded-full px-4 py-2 hover:border-ice hover:text-ice transition">
-            {lang === 'en' ? '中文' : 'EN'}
+            {NEXT_LANG_LABEL[lang]}
           </button>
           <a href="#lab" className="hidden sm:inline text-xs font-mono tracking-widest text-ink bg-gradient-to-r from-ice to-nova rounded-full px-4 py-2">{t.navUpload}</a>
           <a href="/admin/login" className="text-xs font-mono tracking-widest text-nova/80 hover:text-nova">ADMIN</a>
@@ -152,11 +165,18 @@ export default function Home() {
             </div>
           )}
           <div className="flex flex-wrap justify-center gap-4">
-            <a href="#archive" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg bg-gradient-to-r from-ice to-nova text-ink">{t.ctaEnter}</a>
-            <a href="#showroom" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">{t.cta3d}</a>
-            <a href="#lab" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-nova/50 text-nova hover:bg-nova/10 transition">{t.ctaUpload}</a>
+            <a href="#lab" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg bg-gradient-to-r from-ice to-nova text-ink">{t.ctaUpload}</a>
+            <a href="#archive" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">{t.ctaEnter}</a>
+            <a href="#videos" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-nova/50 text-nova hover:bg-nova/10 transition">{t.ctaVideo}</a>
           </div>
         </motion.div>
+      </section>
+
+      {/* ===== UPLOAD LAB — right on the main screen so anyone can upload immediately ===== */}
+      <section id="lab" className="max-w-5xl mx-auto px-8 lg:px-20 py-24">
+        <h2 className="font-display tracking-[0.25em] text-2xl mb-3">{t.secLab}</h2>
+        <p className="font-light text-chrome/60 mb-10 max-w-xl">{t.heroDesc}</p>
+        <UploadLab lang={lang} />
       </section>
 
       <section id="archive" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
@@ -195,14 +215,10 @@ export default function Home() {
         )}
       </section>
 
-      <section id="showroom" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
-        <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secShowroom}</h2>
-        <Showroom3D modelUrl={active ? active.model_url : null} fallbackImage={active ? active.cover_image_url : null} />
-      </section>
-
-      {videos.length > 0 && (
-        <section id="videos" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
-          <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secVideos}</h2>
+      {/* ===== MOTION VIDEO REELS — replaces the old 3D showroom ===== */}
+      <section id="videos" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
+        <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secVideos}</h2>
+        {videos.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {videos.map((v) => (
               <motion.div key={v.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
@@ -218,13 +234,30 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
-        </section>
-      )}
-
-      <section id="lab" className="max-w-5xl mx-auto px-8 lg:px-20 py-24">
-        <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secLab}</h2>
-        <UploadLab lang={lang} />
+        ) : (
+          <div className="rounded-2xl border border-dashed border-white/15 py-24 text-center font-mono text-[11px] tracking-[0.4em] text-chrome/35">
+            {t.noVideos}
+          </div>
+        )}
       </section>
+
+      {/* ===== BACKGROUND SOUNDTRACK — floating play / pause toggle ===== */}
+      {soundtrack && (
+        <>
+          <audio ref={audioRef} src={soundtrack.audio_url} loop preload="auto"
+            onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+          <button onClick={toggleMusic}
+            aria-label={playing ? t.musicPause : t.musicPlay}
+            className="fixed bottom-6 right-6 z-[60] flex items-center gap-2.5 rounded-full border border-ice/40 bg-ink/70 backdrop-blur-xl pl-3 pr-4 py-3 hover:border-ice hover:bg-ink/90 transition group">
+            <span className={'flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-r from-ice to-nova text-ink text-[11px] ' + (playing ? 'nm-music-spin' : '')}>
+              {playing ? '❚❚' : '▶'}
+            </span>
+            <span className="font-mono text-[9px] tracking-[0.3em] text-chrome/70 group-hover:text-ice max-w-[120px] truncate">
+              {playing ? t.musicPause : (soundtrack.title || t.musicPlay)}
+            </span>
+          </button>
+        </>
+      )}
     </div>
   );
 }

@@ -56,6 +56,17 @@ create table if not exists public.videos (
   updated_at timestamptz not null default now()
 );
 
+-- Background soundtrack library (mp3 audio played on the homepage).
+create table if not exists public.soundtracks (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  audio_url text not null,               -- mp3 in the "videos" bucket (audio/ prefix)
+  order_index int not null default 0,
+  is_public boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.uploads (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
@@ -81,6 +92,7 @@ alter table public.characters  enable row level security;
 alter table public.weapons     enable row level security;
 alter table public.storyboards enable row level security;
 alter table public.videos      enable row level security;
+alter table public.soundtracks enable row level security;
 alter table public.uploads     enable row level security;
 alter table public.admins      enable row level security;
 
@@ -108,6 +120,12 @@ create policy "admin write storyboards" on public.storyboards
 create policy "public read published videos" on public.videos
   for select using (is_public = true or public.is_admin());
 create policy "admin write videos" on public.videos
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- Public can read only published soundtracks; admins can do everything.
+create policy "public read published soundtracks" on public.soundtracks
+  for select using (is_public = true or public.is_admin());
+create policy "admin write soundtracks" on public.soundtracks
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- Anyone signed-in (or anon) may insert fan uploads; only admins may browse them all.
@@ -177,6 +195,29 @@ create policy "admin write videos" on public.videos
 
 drop trigger if exists videos_touch on public.videos;
 create trigger videos_touch before update on public.videos
+  for each row execute function public.touch_updated_at();
+
+-- Soundtrack library table (safe to re-run on an existing DB).
+create table if not exists public.soundtracks (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  audio_url text not null,
+  order_index int not null default 0,
+  is_public boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.soundtracks enable row level security;
+
+drop policy if exists "public read published soundtracks" on public.soundtracks;
+create policy "public read published soundtracks" on public.soundtracks
+  for select using (is_public = true or public.is_admin());
+drop policy if exists "admin write soundtracks" on public.soundtracks;
+create policy "admin write soundtracks" on public.soundtracks
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop trigger if exists soundtracks_touch on public.soundtracks;
+create trigger soundtracks_touch before update on public.soundtracks
   for each row execute function public.touch_updated_at();
 
 -- ============ BOOTSTRAP ============

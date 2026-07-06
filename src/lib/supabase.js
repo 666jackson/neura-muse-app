@@ -97,6 +97,51 @@ export async function deleteVideo(id) {
   if (error) throw error;
 }
 
+// ---- soundtracks (background music) ----
+
+// Audio files live in the "videos" bucket under an audio/ prefix (no extra bucket to provision).
+export async function uploadAudio(file, prefix = 'audio/') {
+  return uploadAsset('videos', file, prefix);
+}
+
+// The homepage plays the first published soundtrack (lowest order_index).
+export async function fetchPublicSoundtrack() {
+  const { data, error } = await supabase
+    .from('soundtracks')
+    .select('*')
+    .eq('is_public', true)
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true })
+    .limit(1);
+  if (error) throw error;
+  return data && data[0] ? data[0] : null;
+}
+
+export async function fetchAllSoundtracks() {
+  const { data, error } = await supabase
+    .from('soundtracks')
+    .select('*')
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertSoundtrack(track) {
+  const { data, error } = await supabase
+    .from('soundtracks')
+    .upsert({ ...track, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteSoundtrack(id) {
+  const { error } = await supabase.from('soundtracks').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // ---- uploads (fan lab) ----
 export async function recordUpload(imageUrl, analysisResult) {
   const { data: { user } } = await supabase.auth.getUser();

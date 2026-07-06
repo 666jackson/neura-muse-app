@@ -74,9 +74,13 @@ body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grote
 .nm-marquee  { animation: nmMarquee 22s linear infinite; }
 .nm-marquee-fast { animation: nmMarquee 14s linear infinite; }
 
+/* ============ SOUNDTRACK TOGGLE (pulses while playing) ============ */
+@keyframes nmMusicPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(125,211,252,0.5); } 50% { box-shadow: 0 0 0 6px rgba(125,211,252,0); } }
+.nm-music-spin { animation: nmMusicPulse 1.6s ease-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .nm-scanline, .nm-scanline-2, .nm-flicker, .nm-glitch, .nm-grid,
-  .nm-orb-a, .nm-orb-b, .nm-ken, .nm-marquee, .nm-marquee-fast { animation: none !important; }
+  .nm-orb-a, .nm-orb-b, .nm-ken, .nm-marquee, .nm-marquee-fast, .nm-music-spin { animation: none !important; }
   .nm-scanline, .nm-scanline-2, .nm-glitch { display: none; }
   .nm-intro { animation: none; display: none; }
 }
