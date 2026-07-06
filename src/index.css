@@ -7,23 +7,55 @@ body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grote
 
 /* ============ CINEMATIC BACKGROUND (ported + refined from prototype) ============ */
 @keyframes nmScan   { 0% { transform: translateY(-140%); } 100% { transform: translateY(840%); } }
-@keyframes nmFlicker{ 0%,100% { opacity: .85; } 92% { opacity: .85; } 93% { opacity: .38; } 95% { opacity: .82; } 97% { opacity: .55; } 98% { opacity: .8; } }
-@keyframes nmPulse  { 0%,100% { opacity: .45; transform: translate3d(0,0,0) scale(1); } 50% { opacity: .8; transform: translate3d(2%,-3%,0) scale(1.1); } }
-@keyframes nmPulse2 { 0%,100% { opacity: .4; transform: translate3d(0,0,0) scale(1.05); } 50% { opacity: .7; transform: translate3d(-3%,2%,0) scale(1); } }
+@keyframes nmScan2  { 0% { transform: translateY(-60%); } 100% { transform: translateY(920%); } }
+/* stronger, more erratic holographic flicker */
+@keyframes nmFlicker{
+  0%,100% { opacity: .92; }
+  7% { opacity: .55; } 8% { opacity: .92; }
+  33% { opacity: .9; } 34% { opacity: .32; } 35% { opacity: .88; }
+  62% { opacity: .9; } 63% { opacity: .5; } 64% { opacity: .9; }
+  88% { opacity: .9; } 89% { opacity: .22; } 91% { opacity: .85; } 93% { opacity: .48; } 94% { opacity: .9; }
+}
+/* occasional RGB-split glitch jump */
+@keyframes nmGlitch {
+  0%,44%,52%,74%,80%,100% { opacity: 0; transform: translate3d(0,0,0); }
+  45% { opacity: .5; transform: translate3d(-4px,0,0); }
+  47% { opacity: .35; transform: translate3d(5px,0,0); }
+  49% { opacity: .5; transform: translate3d(-2px,0,0); }
+  75% { opacity: .45; transform: translate3d(4px,0,0); }
+  77% { opacity: .3; transform: translate3d(-5px,0,0); }
+}
+@keyframes nmPulse  { 0%,100% { opacity: .5; transform: translate3d(0,0,0) scale(1); } 50% { opacity: .9; transform: translate3d(2%,-3%,0) scale(1.12); } }
+@keyframes nmPulse2 { 0%,100% { opacity: .45; transform: translate3d(0,0,0) scale(1.05); } 50% { opacity: .8; transform: translate3d(-3%,2%,0) scale(1); } }
 @keyframes nmKen    { 0% { transform: scale(1.05); } 100% { transform: scale(1.16); } }
 @keyframes nmGridDrift { 0% { background-position: 0 0; } 100% { background-position: 0 44px; } }
 
+/* bright moving scan band */
 .nm-scanline {
-  position: absolute; left: 0; right: 0; height: 22%;
-  background: linear-gradient(to bottom, transparent, rgba(125,211,252,0.16), transparent);
+  position: absolute; left: 0; right: 0; height: 20%;
+  background: linear-gradient(to bottom, transparent, rgba(125,211,252,0.30), transparent);
+  box-shadow: 0 0 40px 6px rgba(125,211,252,0.14);
   mix-blend-mode: screen; pointer-events: none;
-  animation: nmScan 7s linear infinite;
+  animation: nmScan 6s linear infinite;
 }
-.nm-flicker { animation: nmFlicker 6s steps(1) infinite; }
+.nm-scanline-2 {
+  position: absolute; left: 0; right: 0; height: 12%;
+  background: linear-gradient(to bottom, transparent, rgba(249,168,212,0.18), transparent);
+  mix-blend-mode: screen; pointer-events: none;
+  animation: nmScan2 9s linear infinite;
+}
+/* fine CRT scanlines texture */
+.nm-scanlines {
+  background-image: repeating-linear-gradient(to bottom, rgba(0,0,0,0.22) 0 1px, transparent 1px 3px);
+  mix-blend-mode: multiply; pointer-events: none;
+}
+/* RGB-split glitch layer (duplicate media with blend + colour shift) */
+.nm-glitch { mix-blend-mode: screen; pointer-events: none; animation: nmGlitch 7s steps(1) infinite; }
+.nm-flicker { animation: nmFlicker 5s steps(1) infinite; }
 .nm-grid {
   background-image:
-    linear-gradient(rgba(125,211,252,0.07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(125,211,252,0.07) 1px, transparent 1px);
+    linear-gradient(rgba(125,211,252,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(125,211,252,0.10) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse at 50% 42%, #000 10%, transparent 72%);
   -webkit-mask-image: radial-gradient(ellipse at 50% 42%, #000 10%, transparent 72%);
@@ -33,7 +65,18 @@ body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grote
 .nm-orb-b { animation: nmPulse2 14s ease-in-out infinite; }
 .nm-ken   { animation: nmKen 18s ease-in-out infinite alternate; }
 
+/* ============ INTRO / BOOT SEQUENCE + MARQUEE ============ */
+@keyframes nmIntroFade { 0%,70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+@keyframes nmIntroBar  { 0% { width: 0; } 68% { width: 82%; } 100% { width: 100%; } }
+@keyframes nmMarquee   { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.nm-intro    { animation: nmIntroFade 3s ease forwards; }
+.nm-introbar { animation: nmIntroBar 2.4s ease forwards; }
+.nm-marquee  { animation: nmMarquee 22s linear infinite; }
+.nm-marquee-fast { animation: nmMarquee 14s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
-  .nm-scanline, .nm-flicker, .nm-grid, .nm-orb-a, .nm-orb-b, .nm-ken { animation: none !important; }
-  .nm-scanline { display: none; }
+  .nm-scanline, .nm-scanline-2, .nm-flicker, .nm-glitch, .nm-grid,
+  .nm-orb-a, .nm-orb-b, .nm-ken, .nm-marquee, .nm-marquee-fast { animation: none !important; }
+  .nm-scanline, .nm-scanline-2, .nm-glitch { display: none; }
+  .nm-intro { animation: none; display: none; }
 }

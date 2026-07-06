@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { fetchPublicCharacters, fetchPublicVideos } from '../lib/supabase.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import UploadLab from '../components/UploadLab.jsx';
@@ -13,6 +13,8 @@ export default function Home() {
   const [videos, setVideos] = React.useState([]);
   const [active, setActive] = React.useState(null);
   const [error, setError] = React.useState(null);
+  const [showIntro, setShowIntro] = React.useState(true);
+  const [heroIdx, setHeroIdx] = React.useState(0);
 
   React.useEffect(() => {
     fetchPublicCharacters()
@@ -23,6 +25,25 @@ export default function Home() {
       .catch(() => {}); // videos are optional; ignore if the table isn't provisioned yet
   }, []);
 
+  // Boot sequence — plays on load, then reveals the main screen
+  React.useEffect(() => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const id = setTimeout(() => setShowIntro(false), reduce ? 0 : 3000);
+    return () => clearTimeout(id);
+  }, []);
+
+  // Auto-rotate the hero background through every published character
+  React.useEffect(() => {
+    if (characters.length < 2) return;
+    const id = setInterval(() => setHeroIdx((i) => (i + 1) % characters.length), 5500);
+    return () => clearInterval(id);
+  }, [characters.length]);
+
+  const heroItem = characters.length ? characters[heroIdx % characters.length] : null;
+
+  const marqueeBase = characters.length ? characters.map((c) => c.name).join('   ·   ') : t.tagline;
+  const marqueeText = `   ${marqueeBase}   ·   NEURA MUSE   ·   SECTOR 07   `.repeat(3);
+
   const toggleLang = () => {
     const next = lang === 'en' ? 'zh' : 'en';
     localStorage.setItem('nm_lang', next);
@@ -31,33 +52,78 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-ink text-chrome overflow-x-hidden">
+      {/* ===== BOOT SEQUENCE — plays on load, then reveals the main screen ===== */}
+      {showIntro && (
+        <div className="nm-intro fixed inset-0 z-[100] bg-ink flex flex-col items-center justify-center gap-6 px-6 pointer-events-none">
+          <div className="font-mono text-[10px] tracking-[0.5em] text-ice/80">{t.introEyebrow}</div>
+          <div className="font-display text-3xl sm:text-5xl tracking-[0.3em] text-center">NEURA MUSE</div>
+          <div className="w-[280px] h-px bg-white/12 relative overflow-hidden">
+            <div className="nm-introbar absolute left-0 top-0 h-full bg-gradient-to-r from-ice to-nova" />
+          </div>
+          <div className="font-mono text-[9px] tracking-[0.4em] text-chrome/40">{t.introFooter}</div>
+
+          {/* 跑馬燈 marquee */}
+          <div className="absolute bottom-10 inset-x-0 overflow-hidden border-y border-white/[0.08] py-2">
+            <div className="nm-marquee whitespace-nowrap font-mono text-[10px] tracking-[0.4em] text-chrome/35">
+              <span>{marqueeText}</span><span aria-hidden="true">{marqueeText}</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <header className="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-8 py-4 bg-ink/60 backdrop-blur-xl border-b border-white/10">
         <div className="font-display tracking-[0.3em] text-sm">NEURA MUSE</div>
+
+        {/* Center section nav */}
+        <nav className="hidden md:flex items-center gap-7 font-mono text-[11px] tracking-[0.25em] text-chrome/60">
+          <a href="#archive" className="hover:text-ice transition">{t.navArchive}</a>
+          <a href="#showroom" className="hover:text-ice transition">{t.navShowroom}</a>
+          <a href="#videos" className="hover:text-ice transition">{t.navVideos}</a>
+          <a href="#lab" className="hover:text-ice transition">{t.navLab}</a>
+        </nav>
+
         <div className="flex items-center gap-3">
           <button onClick={toggleLang} className="text-xs font-mono tracking-widest border border-white/20 rounded-full px-4 py-2 hover:border-ice hover:text-ice transition">
             {lang === 'en' ? '中文' : 'EN'}
           </button>
+          <a href="#lab" className="hidden sm:inline text-xs font-mono tracking-widest text-ink bg-gradient-to-r from-ice to-nova rounded-full px-4 py-2">{t.navUpload}</a>
           <a href="/admin/login" className="text-xs font-mono tracking-widest text-nova/80 hover:text-nova">ADMIN</a>
         </div>
       </header>
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Full-bleed centered background reel */}
-        {active && (
+        {/* Full-bleed centered background reel — auto-rotates through every character with a crossfade */}
+        {heroItem && (
           <div className="absolute inset-0 z-0">
-            <div className="absolute inset-0 nm-ken">
-              {active.video_url ? (
-                <video src={active.video_url} autoPlay muted loop playsInline
-                  poster={active.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
-              ) : (
-                <img src={active.cover_image_url} alt={active.name} className="absolute inset-0 w-full h-full object-cover" />
-              )}
-            </div>
+            <AnimatePresence>
+              <motion.div key={heroItem.id}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                transition={{ duration: 1.4, ease: 'easeInOut' }}
+                className="absolute inset-0">
+                <div className="absolute inset-0 nm-ken">
+                  {heroItem.video_url ? (
+                    <video src={heroItem.video_url} autoPlay muted loop playsInline
+                      poster={heroItem.cover_image_url} className="absolute inset-0 w-full h-full object-cover" />
+                  ) : (
+                    <img src={heroItem.cover_image_url} alt={heroItem.name} className="absolute inset-0 w-full h-full object-cover" />
+                  )}
+                </div>
+              </motion.div>
+            </AnimatePresence>
 
-            {/* Cinematic flicker (ported + refined from the prototype) */}
+            {/* RGB-split glitch flash (chromatic aberration duplicate of the cover) */}
+            {heroItem.cover_image_url && (
+              <img src={heroItem.cover_image_url} alt="" aria-hidden
+                className="absolute inset-0 w-full h-full object-cover nm-glitch"
+                style={{ filter: 'hue-rotate(150deg) saturate(4)' }} />
+            )}
+
+            {/* Enhanced cinematic flicker stack */}
             <div className="absolute inset-0 nm-grid pointer-events-none" />
+            <div className="absolute inset-0 nm-scanlines pointer-events-none" />
             <div className="absolute inset-0 overflow-hidden pointer-events-none nm-flicker">
               <div className="nm-scanline" />
+              <div className="nm-scanline-2" />
             </div>
 
             {/* Soft fade — keeps centered text readable and blends into the page below */}
@@ -78,10 +144,11 @@ export default function Home() {
           <div className="text-ice font-mono text-xs tracking-[0.4em] mb-6">{t.heroEyebrow}</div>
           <h1 className="font-display text-5xl lg:text-7xl tracking-widest mb-8">NEURA MUSE</h1>
           <p className="text-chrome/70 font-light leading-relaxed max-w-md mx-auto mb-10">{t.heroDesc}</p>
-          {active && (
+          {heroItem && (
             <div className="mb-10">
               <div className="font-mono text-[10px] tracking-[0.3em] text-ice mb-1">FASHION MOTION REEL</div>
-              <div className="font-display tracking-[0.2em] text-lg">{active.name}</div>
+              <motion.div key={heroItem.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className="font-display tracking-[0.2em] text-lg">{heroItem.name}</motion.div>
             </div>
           )}
           <div className="flex flex-wrap justify-center gap-4">
