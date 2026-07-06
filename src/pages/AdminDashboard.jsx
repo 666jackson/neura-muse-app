@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllCharacters, upsertCharacter, deleteCharacter, uploadAsset, uploadVideo, signOut } from '../lib/supabase.js';
+import { analyzeFile, characterFromAnalysis } from '../lib/muse.js';
 import { T } from '../i18n.js';
 
 const EMPTY = {
@@ -17,6 +18,7 @@ export default function AdminDashboard({ session }) {
   const [form, setForm] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState(null);
+  const [progress, setProgress] = React.useState(null); // batch upload { done, total }
 
   React.useEffect(() => {
     if (session === null) return; // still resolving
@@ -26,14 +28,44 @@ export default function AdminDashboard({ session }) {
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
+  // Upload a cover AND auto-fill any empty fields from the analysis — same reading as the homepage lab.
   const uploadCover = async (e) => {
     const f = e.target.files[0];
     if (!f) return;
     setBusy(true);
     try {
       const url = await uploadAsset('characters', f, 'covers/');
-      setForm({ ...form, cover_image_url: url });
+      const a = analyzeFile(f);
+      setForm((prev) => ({
+        ...prev,
+        cover_image_url: url,
+        name: prev.name || 'CUSTOM MUSE',
+        armor_type: prev.armor_type || a.palette,
+        weapon_system: prev.weapon_system || a.weapon,
+        energy_core: prev.energy_core || 'Unclassified Core',
+        rarity_level: prev.rarity_level || a.rarity,
+        cinematic_description: prev.cinematic_description || (a.mood + ' · ' + a.role + ' · ' + a.rarity)
+      }));
     } catch (err) { setError(err.message); } finally { setBusy(false); }
+  };
+
+  // Batch quick-add: drop many images → each is uploaded, auto-named, auto-analyzed and saved as a character.
+  const quickUpload = async (e) => {
+    const files = Array.from(e.target.files || []).filter((f) => f.type && f.type.startsWith('image'));
+    e.target.value = '';
+    if (!files.length) return;
+    setBusy(true); setError(null); setProgress({ done: 0, total: files.length });
+    try {
+      let n = rows.length;
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const url = await uploadAsset('characters', f, 'covers/');
+        n += 1;
+        await upsertCharacter(characterFromAnalysis(analyzeFile(f), url, n));
+        setProgress({ done: i + 1, total: files.length });
+      }
+      setRows(await fetchAllCharacters());
+    } catch (err) { setError(err.message); } finally { setBusy(false); setProgress(null); }
   };
 
   const uploadModel = async (e) => {
@@ -87,6 +119,10 @@ export default function AdminDashboard({ session }) {
         </div>
         <div className="flex gap-3">
           <button onClick={() => setForm({ ...EMPTY })} className="font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-ice/50 text-ice hover:bg-ice/10">+ {t.newChar}</button>
+          <label className={'font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-nova/50 text-nova hover:bg-nova/10 cursor-pointer ' + (busy ? 'opacity-50 pointer-events-none' : '')}>
+            ⚡ {t.quickAdd}
+            <input type="file" accept="image/*" multiple hidden onChange={quickUpload} />
+          </label>
           <button onClick={() => navigate('/admin/videos')} className="font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-nova/50 text-nova hover:bg-nova/10">▶ {t.videoLibrary}</button>
           <button onClick={() => navigate('/admin/audio')} className="font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-ice/50 text-ice hover:bg-ice/10">♪ {t.audioLibrary}</button>
           <button onClick={async () => { await signOut(); navigate('/admin/login'); }} className="font-mono text-[11px] tracking-widest px-5 py-3 rounded-lg border border-white/20 text-chrome/60 hover:border-red-400 hover:text-red-400">{t.signOut}</button>
@@ -94,6 +130,10 @@ export default function AdminDashboard({ session }) {
       </div>
 
       {error && <div className="font-mono text-xs text-red-400 mb-6">▮ {error}</div>}
+      <div className="font-mono text-[10px] tracking-wider text-chrome/40 mb-4">⚡ {t.quickAddHint}</div>
+      {progress && (
+        <div className="font-mono text-xs text-ice mb-6">▮ {t.adding} {progress.done}/{progress.total}…</div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         <div className="flex flex-col gap-3">

@@ -194,31 +194,23 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ===== MOTION VIDEO REELS — full-bleed, right under the hero (replaces the old 3D showroom) ===== */}
-      <section id="videos" className="w-full px-4 sm:px-6 lg:px-8 py-24">
-        <h2 className="font-display tracking-[0.25em] text-2xl mb-10 px-2 lg:px-4">{t.secVideos}</h2>
-        {videos.length > 0 ? (
-          <div className="grid gap-6 md:grid-cols-2">
+      {/* ===== MOTION VIDEO REELS — frameless, titleless, blends into the background ===== */}
+      {videos.length > 0 && (
+        <section id="videos" className="w-full px-4 sm:px-6 lg:px-10 py-20">
+          <div className="grid gap-x-8 gap-y-10 md:grid-cols-2">
             {videos.map((v) => (
-              <motion.div key={v.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="rounded-2xl border border-white/12 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
-                <div className="relative bg-ink aspect-video">
-                  <video src={v.video_url} controls playsInline muted loop poster={v.poster_url || undefined}
-                    className="w-full h-full object-cover" />
-                </div>
-                <div className="p-5">
-                  <div className="font-display text-base tracking-[0.2em] mb-2">{v.title}</div>
-                  {v.description && <p className="font-light text-sm leading-relaxed text-chrome/60">{v.description}</p>}
-                </div>
+              <motion.div key={v.id} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+                transition={{ duration: 1 }} className="relative aspect-video">
+                <video src={v.video_url} autoPlay muted loop playsInline poster={v.poster_url || undefined}
+                  className="w-full h-full object-cover" />
+                {/* vignette that melts the video edges into the ink background */}
+                <div className="pointer-events-none absolute inset-0"
+                  style={{ boxShadow: 'inset 0 0 90px 26px rgba(4,5,13,0.95)' }} />
               </motion.div>
             ))}
           </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-white/15 py-24 text-center font-mono text-[11px] tracking-[0.4em] text-chrome/35">
-            {t.noVideos}
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       <section id="archive" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
         <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secArchive}</h2>

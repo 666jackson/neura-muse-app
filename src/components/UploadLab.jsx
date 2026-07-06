@@ -1,13 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uploadAsset, recordUpload } from '../lib/supabase.js';
+import { analyzeFile } from '../lib/muse.js';
 import { T } from '../i18n.js';
-
-const MOODS = ['Cold Precision', 'Soft Rebellion', 'Lunar Melancholy', 'Neon Devotion', 'Chrome Serenity'];
-const ROLES = ['Opening Frame Heroine', 'Blueprint Oracle', 'Final Act Duelist', 'Cover Muse', 'Silent Sentinel'];
-const PALETTES = ['Silver Ice — chrome / cyan', 'Pink Nova — gloss / rose', 'Black Galaxy — void / violet', 'White Chrome — pearl / steel'];
-const WEAPONS = ['PLASMA BLADE', 'ION RIFLE', 'NANO SHIELD', 'WING BOOSTER', 'STEALTH CLOAK', 'HEAVY ARMOR MODE'];
-const RARITIES = ['SR — LIMITED FRAME', 'SSR — PROTOTYPE', 'UR — ONE OF ONE'];
 
 let SEQ = 0;
 
@@ -22,14 +17,7 @@ export default function UploadLab({ lang = 'en', onAdd }) {
   const processOne = (file, i) => {
     const id = 'sp-' + Date.now() + '-' + (SEQ++) + '-' + i;
     const preview = URL.createObjectURL(file);
-    const h = (file.name + file.size).split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    const analysis = {
-      palette: PALETTES[h % PALETTES.length],
-      mood: MOODS[h % MOODS.length],
-      weapon: WEAPONS[h % WEAPONS.length],
-      role: ROLES[h % ROLES.length],
-      rarity: RARITIES[h % RARITIES.length]
-    };
+    const analysis = analyzeFile(file);
     setSpecimens((prev) => [...prev, { id, preview, url: null, analyzing: true, analysis: null, added: false }]);
     // Persist to storage in the background (optional — falls back to the local preview).
     uploadAsset('uploads', file)
