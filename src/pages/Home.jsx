@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { fetchPublicCharacters } from '../lib/supabase.js';
+import { fetchPublicCharacters, fetchPublicVideos } from '../lib/supabase.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import UploadLab from '../components/UploadLab.jsx';
 import Showroom3D from '../components/Showroom3D.jsx';
@@ -10,6 +10,7 @@ export default function Home() {
   const [lang, setLang] = React.useState(localStorage.getItem('nm_lang') || 'en');
   const t = T[lang];
   const [characters, setCharacters] = React.useState([]);
+  const [videos, setVideos] = React.useState([]);
   const [active, setActive] = React.useState(null);
   const [error, setError] = React.useState(null);
 
@@ -17,6 +18,9 @@ export default function Home() {
     fetchPublicCharacters()
       .then((rows) => { setCharacters(rows); setActive(rows[0] || null); })
       .catch((e) => setError(e.message));
+    fetchPublicVideos()
+      .then(setVideos)
+      .catch(() => {}); // videos are optional; ignore if the table isn't provisioned yet
   }, []);
 
   const toggleLang = () => {
@@ -117,6 +121,27 @@ export default function Home() {
         <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secShowroom}</h2>
         <Showroom3D modelUrl={active ? active.model_url : null} fallbackImage={active ? active.cover_image_url : null} />
       </section>
+
+      {videos.length > 0 && (
+        <section id="videos" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
+          <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secVideos}</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {videos.map((v) => (
+              <motion.div key={v.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+                className="rounded-2xl border border-white/12 bg-white/[0.03] backdrop-blur-xl overflow-hidden">
+                <div className="relative bg-ink aspect-video">
+                  <video src={v.video_url} controls playsInline muted loop poster={v.poster_url || undefined}
+                    className="w-full h-full object-cover" />
+                </div>
+                <div className="p-5">
+                  <div className="font-display text-sm tracking-[0.2em] mb-2">{v.title}</div>
+                  {v.description && <p className="font-light text-sm leading-relaxed text-chrome/60">{v.description}</p>}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section id="lab" className="max-w-5xl mx-auto px-8 lg:px-20 py-24">
         <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secLab}</h2>

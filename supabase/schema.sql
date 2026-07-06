@@ -43,6 +43,19 @@ create table if not exists public.storyboards (
   order_index int not null default 0
 );
 
+-- Standalone video library (not tied to a character).
+create table if not exists public.videos (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  video_url text not null,               -- mp4 in the "videos" bucket
+  poster_url text,                       -- optional thumbnail image
+  order_index int not null default 0,
+  is_public boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.uploads (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
@@ -67,6 +80,7 @@ $$;
 alter table public.characters  enable row level security;
 alter table public.weapons     enable row level security;
 alter table public.storyboards enable row level security;
+alter table public.videos      enable row level security;
 alter table public.uploads     enable row level security;
 alter table public.admins      enable row level security;
 
@@ -88,6 +102,12 @@ create policy "public read storyboards of published characters" on public.storyb
     exists (select 1 from public.characters c where c.id = character_id and (c.is_public or public.is_admin()))
   );
 create policy "admin write storyboards" on public.storyboards
+  for all using (public.is_admin()) with check (public.is_admin());
+
+-- Public can read only published videos; admins can do everything.
+create policy "public read published videos" on public.videos
+  for select using (is_public = true or public.is_admin());
+create policy "admin write videos" on public.videos
   for all using (public.is_admin()) with check (public.is_admin());
 
 -- Anyone signed-in (or anon) may insert fan uploads; only admins may browse them all.
@@ -123,12 +143,41 @@ drop trigger if exists characters_touch on public.characters;
 create trigger characters_touch before update on public.characters
   for each row execute function public.touch_updated_at();
 
+drop trigger if exists videos_touch on public.videos;
+create trigger videos_touch before update on public.videos
+  for each row execute function public.touch_updated_at();
+
 -- ============ MIGRATION (existing databases) ============
 -- Safe to re-run; adds the video columns + bucket to an already-provisioned DB.
 alter table public.characters add column if not exists video_url text;
 
 insert into storage.buckets (id, name, public) values ('videos', 'videos', true)
 on conflict (id) do nothing;
+
+-- Standalone video library table (safe to re-run on an existing DB).
+create table if not exists public.videos (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  description text,
+  video_url text not null,
+  poster_url text,
+  order_index int not null default 0,
+  is_public boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.videos enable row level security;
+
+drop policy if exists "public read published videos" on public.videos;
+create policy "public read published videos" on public.videos
+  for select using (is_public = true or public.is_admin());
+drop policy if exists "admin write videos" on public.videos;
+create policy "admin write videos" on public.videos
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop trigger if exists videos_touch on public.videos;
+create trigger videos_touch before update on public.videos
+  for each row execute function public.touch_updated_at();
 
 -- ============ BOOTSTRAP ============
 -- 1. Create your admin user in Authentication > Users.

@@ -60,6 +60,43 @@ export async function uploadVideo(file, prefix = 'imports/') {
   return uploadAsset('videos', file, prefix);
 }
 
+// ---- videos (standalone library) ----
+export async function fetchPublicVideos() {
+  const { data, error } = await supabase
+    .from('videos')
+    .select('*')
+    .eq('is_public', true)
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchAllVideos() {
+  const { data, error } = await supabase
+    .from('videos')
+    .select('*')
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertVideo(video) {
+  const { data, error } = await supabase
+    .from('videos')
+    .upsert({ ...video, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteVideo(id) {
+  const { error } = await supabase.from('videos').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // ---- uploads (fan lab) ----
 export async function recordUpload(imageUrl, analysisResult) {
   const { data: { user } } = await supabase.auth.getUser();

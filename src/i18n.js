@@ -8,7 +8,9 @@ export const T = {
     adminTitle: 'ADMIN CONSOLE', signIn: 'SIGN IN', signOut: 'SIGN OUT',
     save: 'SAVE CHARACTER', cancel: 'CANCEL', newChar: 'NEW CHARACTER',
     analyzing: 'ANALYZING CHARACTER...', addArchive: 'ADD TO ARCHIVE',
-    motionReel: 'MOTION REEL', importVideo: 'IMPORT VIDEO', removeVideo: 'REMOVE'
+    motionReel: 'MOTION REEL', importVideo: 'IMPORT VIDEO', removeVideo: 'REMOVE',
+    videoLibrary: 'VIDEO LIBRARY', manageVideos: 'VIDEO LIBRARY', newVideo: 'NEW VIDEO',
+    saveVideo: 'SAVE VIDEO', secVideos: 'VIDEO LIBRARY', backToChars: 'CHARACTERS'
   },
   zh: {
     tagline: '銀河機甲角色實驗室',
@@ -19,7 +21,9 @@ export const T = {
     adminTitle: '管理後台', signIn: '登入', signOut: '登出',
     save: '儲存角色', cancel: '取消', newChar: '新增角色',
     analyzing: '角色分析中...', addArchive: '加入檔案庫',
-    motionReel: '動態影片', importVideo: '導入影片', removeVideo: '移除'
+    motionReel: '動態影片', importVideo: '導入影片', removeVideo: '移除',
+    videoLibrary: '影片庫', manageVideos: '影片庫', newVideo: '新增影片',
+    saveVideo: '儲存影片', secVideos: '影片庫', backToChars: '角色管理'
   }
 };
 
