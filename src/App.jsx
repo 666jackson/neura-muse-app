@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.jsx';
+import Oracle from './pages/Oracle.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import VideoManager from './pages/VideoManager.jsx';
@@ -18,6 +19,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/oracle" element={<Oracle />} />
       <Route path="/admin/login" element={<AdminLogin session={session} />} />
       <Route path="/admin/dashboard" element={<AdminDashboard session={session} />} />
       <Route path="/admin/videos" element={<VideoManager session={session} />} />

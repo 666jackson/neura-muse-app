@@ -134,6 +134,7 @@ export default function Home() {
           <a href="#videos" className="hover:text-ice transition">{t.navVideos}</a>
           <a href="#archive" className="hover:text-ice transition">{t.navArchive}</a>
           <a href="#lab" className="hover:text-ice transition">{t.navUpload}</a>
+          <a href="/oracle" className="text-nova/90 hover:text-nova transition">{lang === 'zh' ? '神諭殿' : lang === 'ja' ? '神託' : 'ORACLE'}</a>
         </nav>
 
         <div className="flex items-center gap-3">

@@ -78,9 +78,39 @@ body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grote
 @keyframes nmMusicPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(125,211,252,0.5); } 50% { box-shadow: 0 0 0 6px rgba(125,211,252,0); } }
 .nm-music-spin { animation: nmMusicPulse 1.6s ease-out infinite; }
 
+/* ============ ORACLE PAGE — gacha + appraisal FX ============ */
+/* animated gold/holo border shimmer for SSR / UR frames */
+@keyframes nmGoldFrame {
+  0%,100% { border-color: rgba(251,191,36,0.55); box-shadow: 0 0 22px rgba(251,191,36,0.35); }
+  50%     { border-color: rgba(255,255,255,0.9);  box-shadow: 0 0 40px rgba(251,191,36,0.7); }
+}
+.nm-gold-frame { animation: nmGoldFrame 2.2s ease-in-out infinite; }
+
+/* diagonal holographic sheen that sweeps across rare cards */
+@keyframes nmHoloSweep { 0% { transform: translateX(-120%) skewX(-18deg); } 100% { transform: translateX(220%) skewX(-18deg); } }
+.nm-holo-sweep {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), rgba(125,211,252,0.25), transparent);
+  mix-blend-mode: screen;
+  animation: nmHoloSweep 2.6s ease-in-out infinite;
+}
+
+/* rotating light rays behind the UR full-screen takeover */
+@keyframes nmUrRays { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.nm-ur-rays {
+  background: repeating-conic-gradient(from 0deg, rgba(249,168,212,0.10) 0deg 8deg, transparent 8deg 16deg);
+  animation: nmUrRays 24s linear infinite;
+}
+@keyframes nmUrPulse { 0%,100% { opacity: .5; letter-spacing: 0.5em; } 50% { opacity: 1; letter-spacing: 0.62em; } }
+.nm-ur-pulse { animation: nmUrPulse 1.4s ease-in-out infinite; }
+
+/* radar appraisal ring that expands during the oracle scan */
+@keyframes nmRadar { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
+.nm-radar { border: 1px solid rgba(125,211,252,0.5); animation: nmRadar 1.9s ease-out infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .nm-scanline, .nm-scanline-2, .nm-flicker, .nm-glitch, .nm-grid,
-  .nm-orb-a, .nm-orb-b, .nm-ken, .nm-marquee, .nm-marquee-fast, .nm-music-spin { animation: none !important; }
+  .nm-orb-a, .nm-orb-b, .nm-ken, .nm-marquee, .nm-marquee-fast, .nm-music-spin,
+  .nm-gold-frame, .nm-holo-sweep, .nm-ur-rays, .nm-ur-pulse, .nm-radar { animation: none !important; }
   .nm-scanline, .nm-scanline-2, .nm-glitch { display: none; }
   .nm-intro { animation: none; display: none; }
 }
