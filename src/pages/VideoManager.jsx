@@ -66,6 +66,19 @@ export default function VideoManager({ session }) {
     setRows(await fetchAllVideos());
   };
 
+  // ---- drag-to-reorder (writes order_index for every row) ----
+  const dragIndex = React.useRef(null);
+  const reorder = async (from, to) => {
+    if (from == null || to == null || from === to) return;
+    const next = [...rows];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setRows(next); // optimistic
+    try {
+      await Promise.all(next.map((r, idx) => upsertVideo({ ...r, order_index: idx })));
+    } catch (err) { setError(err.message); setRows(await fetchAllVideos()); }
+  };
+
   return (
     <div className="min-h-screen bg-ink text-chrome px-8 lg:px-16 py-12 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
@@ -89,8 +102,14 @@ export default function VideoManager({ session }) {
               NO VIDEOS YET
             </div>
           )}
-          {rows.map((r) => (
-            <div key={r.id} className="flex items-center gap-4 rounded-xl border border-white/12 bg-white/[0.03] p-3">
+          {rows.map((r, i) => (
+            <div key={r.id}
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={() => { reorder(dragIndex.current, i); dragIndex.current = null; }}
+              className="flex items-center gap-3 rounded-xl border border-white/12 bg-white/[0.03] p-3">
+              <span draggable onDragStart={() => (dragIndex.current = i)}
+                title="Drag to reorder"
+                className="cursor-grab active:cursor-grabbing select-none px-1 text-chrome/40 hover:text-ice text-lg leading-none">⠿</span>
               <div className="w-20 h-12 rounded-lg border border-white/10 bg-ink overflow-hidden flex-shrink-0">
                 {r.poster_url ? (
                   <img src={r.poster_url} alt="" className="w-full h-full object-cover" />

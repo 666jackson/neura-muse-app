@@ -222,6 +222,31 @@ drop trigger if exists soundtracks_touch on public.soundtracks;
 create trigger soundtracks_touch before update on public.soundtracks
   for each row execute function public.touch_updated_at();
 
+-- Intro animation table — the two clips played before the hero image rotation.
+-- Safe to re-run on an existing DB.
+create table if not exists public.intro_videos (
+  id uuid primary key default gen_random_uuid(),
+  title text,
+  video_url text not null,
+  poster_url text,
+  order_index int not null default 0,   -- 0 = first clip, 1 = second clip
+  is_public boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.intro_videos enable row level security;
+
+drop policy if exists "public read published intro" on public.intro_videos;
+create policy "public read published intro" on public.intro_videos
+  for select using (is_public = true or public.is_admin());
+drop policy if exists "admin write intro" on public.intro_videos;
+create policy "admin write intro" on public.intro_videos
+  for all using (public.is_admin()) with check (public.is_admin());
+
+drop trigger if exists intro_videos_touch on public.intro_videos;
+create trigger intro_videos_touch before update on public.intro_videos
+  for each row execute function public.touch_updated_at();
+
 -- ============ BOOTSTRAP ============
 -- 1. Create your admin user in Authentication > Users.
 -- 2. insert into public.admins (user_id) values ('YOUR-USER-UUID');

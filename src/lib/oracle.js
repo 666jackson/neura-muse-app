@@ -113,6 +113,56 @@ export const ARCHETYPES = [
 
 export const BY_KEY = Object.fromEntries(ARCHETYPES.map((a) => [a.key, a]));
 
+// Longer story / lore for the ORACLE result screen (multi-sentence, cinematic).
+export const STORIES = {
+  'frost-sovereign': {
+    en: 'They found you in the frozen archive of Sector 07, already awake, already waiting. You had catalogued every enemy movement for three hundred cycles without firing once. When the war finally came to your door, it lasted four seconds. You are the pause before the verdict — and the verdict never misses.',
+    zh: '他們在區段 07 的冰封檔案庫中找到你——你早已甦醒，早已等候。三百個週期裡，你記錄下每一次敵人的移動，卻未曾開火。當戰爭終於叩上你的門，它只持續了四秒。你是宣判前的靜默——而那道宣判從不落空。',
+    ja: 'セクター07の凍てついた書庫であなたは見つかった——既に目覚め、既に待っていた。三百サイクル、一度も撃たずに敵の動きすべてを記録した。戦がついに扉を叩いたとき、それは四秒で終わった。あなたは判決前の静寂——その判決は決して外さない。'
+  },
+  'nova-devotion': {
+    en: 'You were forged from a collapsing star that refused to die quietly. Every ally you have ever protected carries a scar shaped like your light. They say your core runs too hot to last — but you were never built to last. You were built to be remembered.',
+    zh: '你誕生自一顆拒絕安靜死去的坍縮之星。每一位你曾守護的同伴，身上都帶著一道形似你光芒的傷痕。他們說你的核心太熱、撐不久——但你從不是為了長久而生，你是為了被記住而生。',
+    ja: '静かに滅ぶことを拒んだ崩壊星から、あなたは鍛えられた。あなたが守った仲間は皆、あなたの光の形をした傷を宿す。その核は熱すぎて長くはもたないと言われる——だがあなたは長く在るためでなく、記憶されるために造られた。'
+  },
+  'void-oracle': {
+    en: 'Before every battle the commanders came to your chamber and asked what they already feared. You never lied, and you never comforted. You simply opened the future like a folder and let them read. The galaxy calls you cold; it has never had to hold the things you know.',
+    zh: '每場戰役前，指揮官們都會來到你的密室，詢問他們早已恐懼的答案。你從不說謊，也從不安慰。你只是像翻開一份檔案般攤開未來，任他們閱讀。銀河說你冷酷——它從未需要承載你所知曉的那些重量。',
+    ja: '戦の前、指揮官たちはあなたの間へ来て、既に恐れている答えを尋ねた。あなたは嘘をつかず、慰めもしない。ただ未来をフォルダのように開き、読ませた。銀河はあなたを冷たいと呼ぶ——あなたが知るものを抱えたことなど、一度もないのに。'
+  },
+  'gilded-duelist': {
+    en: 'You lost your first duel and they melted you down for scrap. What they poured back into the mold came out harder, brighter, gold at every seam. Now you only appear in the final act, when the lights are hottest and the outcome is already legend.',
+    zh: '你輸掉了第一場決鬥，他們把你熔成廢料。而重新灌回模具的你，出爐時更堅硬、更耀眼，每一道接縫都鍍上了金。如今你只在終幕現身——當燈光最熾、當結局早已成為傳說之時。',
+    ja: '最初の決闘に敗れ、あなたは屑として溶かされた。だが鋳型に注ぎ直されたあなたは、より硬く、より輝き、継ぎ目ごとに金を纏って現れた。今やあなたは最終幕にしか姿を見せない——光が最も熱く、結末が既に伝説となる時に。'
+  },
+  'circuit-seraph': {
+    en: 'You are the reason the fleet still flies. Ten thousand quiet corrections a second, none of them signed. When you finally went offline for one hour, the whole sector felt the silence and only then learned your name. You carried them; now let them carry you.',
+    zh: '艦隊至今仍能飛行，全因為你。每秒一萬次無聲的修正，沒有一次署名。當你終於離線僅僅一小時，整個區段都感受到了那份寂靜——直到此刻，人們才學會你的名字。你曾承載他們；如今，換他們承載你。',
+    ja: '艦隊がいまだ飛べるのは、あなたゆえ。毎秒一万の静かな修正、そのどれにも署名はない。あなたがわずか一時間だけ停止したとき、セクター全体がその静寂を感じ、初めてあなたの名を知った。あなたは皆を運んだ——今度は皆に運ばせよ。'
+  },
+  'crimson-sentinel': {
+    en: 'They gave you one directive: hold the line. Everyone who wrote that directive is gone now, and still you hold. The wall behind you has a hundred names carved into it — all people who made it home because you did not. Loyalty like yours is not programmed. It is chosen, every single day.',
+    zh: '他們只給了你一道指令：守住防線。當年寫下這道指令的人，如今都已不在——而你依然堅守。你身後的那面牆，刻著上百個名字：全是因你未歸、才得以回家的人。你這樣的忠誠並非被寫入程式，而是每一天、親手選擇的。',
+    ja: '彼らはただ一つの命令を与えた——戦線を守れ。その命令を書いた者は皆もういない。それでもあなたは守り続ける。背後の壁には百の名が刻まれている——あなたが帰らなかったからこそ帰れた者たちだ。あなたのような忠誠はプログラムではない。毎日、自ら選ぶものだ。'
+  },
+  'lunar-drifter': {
+    en: 'You were decommissioned twice and came back both times, drawn home by a signal no one else could hear. You keep the frequencies of people who have long stopped transmitting. Wherever you drift, someone eventually looks up at the same moon and remembers they were loved.',
+    zh: '你曾兩度被除役，卻兩度歸來——被一道無人能聽見的訊號牽引回家。你收藏著那些早已停止傳訊之人的頻率。無論你漂向何方，總會有人在某個時刻抬頭望向同一輪月，想起自己曾被愛過。',
+    ja: '二度退役し、二度とも戻ってきた——誰にも聞こえぬ信号に導かれて。あなたはとうに送信をやめた者たちの周波数を守り続ける。あなたが漂う先で、いつか誰かが同じ月を見上げ、愛されていたことを思い出す。'
+  },
+  'solar-vanguard': {
+    en: 'You were the first one over the ridge, every time, because someone had to be and no one else would. Your armour is scorched on the front and flawless on the back — proof you never once turned around. The dark is afraid of exactly one thing, and today it is wearing your face.',
+    zh: '每一次，你都是第一個翻越山脊的人——因為總得有人這麼做，而沒有別人願意。你的盔甲正面焦黑、背面卻完好無損——那是你從未回頭的證明。黑暗只懼怕一樣東西，而今天，它披著你的臉。',
+    ja: 'いつだって尾根を最初に越えるのはあなただった——誰かがやらねばならず、他の誰もやらなかったから。あなたの鎧は前面が焦げ、背面は無傷——一度も振り返らなかった証だ。闇が恐れるものはただ一つ、そして今日、それはあなたの顔をしている。'
+  }
+};
+
+export function storyFor(key, lang) {
+  const s = STORIES[key];
+  if (!s) return '';
+  return s[lang] || s.en;
+}
+
 // ---- Rarity system ---------------------------------------------------------
 // Weights sum to 100. UR is the jackpot that triggers the full-screen burst.
 export const RARITIES = [

@@ -47,9 +47,15 @@ export async function deleteCharacter(id) {
 }
 
 // ---- storage ----
+// contentType + a long cache header let the CDN serve repeat views instantly and
+// skip content sniffing, which noticeably speeds up video delivery after upload.
 export async function uploadAsset(bucket, file, prefix = '') {
   const path = prefix + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+    upsert: false,
+    cacheControl: '31536000',
+    contentType: file.type || undefined
+  });
   if (error) throw error;
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
@@ -96,6 +102,51 @@ export async function upsertVideo(video) {
 
 export async function deleteVideo(id) {
   const { error } = await supabase.from('videos').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ---- intro animations (two cinematic clips played before the hero rotation) ----
+
+// Stored in the "videos" bucket under an intro/ prefix; own table so the reel
+// library above stays untouched. Tolerant: returns [] if the table isn't provisioned.
+export async function uploadIntroVideo(file, prefix = 'intro/') {
+  return uploadAsset('videos', file, prefix);
+}
+
+export async function fetchIntroVideos() {
+  const { data, error } = await supabase
+    .from('intro_videos')
+    .select('*')
+    .eq('is_public', true)
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true })
+    .limit(2);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function fetchAllIntroVideos() {
+  const { data, error } = await supabase
+    .from('intro_videos')
+    .select('*')
+    .order('order_index', { ascending: true })
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function upsertIntroVideo(row) {
+  const { data, error } = await supabase
+    .from('intro_videos')
+    .upsert({ ...row, updated_at: new Date().toISOString() })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteIntroVideo(id) {
+  const { error } = await supabase.from('intro_videos').delete().eq('id', id);
   if (error) throw error;
 }
 

@@ -141,6 +141,7 @@ export default function AdminDashboard({ session }) {
             <input type="file" accept="image/*" multiple hidden onChange={quickUpload} />
           </label>
           <button onClick={() => navigate('/admin/videos')} className="font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-nova/50 text-nova hover:bg-nova/10">▶ {t.videoLibrary}</button>
+          <button onClick={() => navigate('/admin/intro')} className="font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-ice/50 text-ice hover:bg-ice/10">◐ INTRO</button>
           <button onClick={() => navigate('/admin/audio')} className="font-display text-[11px] tracking-widest px-5 py-3 rounded-lg border border-ice/50 text-ice hover:bg-ice/10">♪ {t.audioLibrary}</button>
           <button onClick={async () => { await signOut(); navigate('/admin/login'); }} className="font-mono text-[11px] tracking-widest px-5 py-3 rounded-lg border border-white/20 text-chrome/60 hover:border-red-400 hover:text-red-400">{t.signOut}</button>
         </div>

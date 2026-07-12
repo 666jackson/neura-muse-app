@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { fetchPublicCharacters, fetchPublicVideos, fetchPublicSoundtrack } from '../lib/supabase.js';
+import { fetchPublicCharacters, fetchPublicVideos, fetchPublicSoundtrack, fetchIntroVideos } from '../lib/supabase.js';
 import CharacterCard from '../components/CharacterCard.jsx';
 import UploadLab from '../components/UploadLab.jsx';
 import { T, NEXT_LANG_LABEL, nextLang } from '../i18n.js';
@@ -14,6 +14,26 @@ const NAV_AREAS = [
   { path: '/vault',      label: { en: 'VAULT',  zh: '密庫',    ja: '蔵' } }
 ];
 
+// Plays the two intro clips full-screen in sequence, then reveals the site.
+function IntroReel({ videos, onDone, skipLabel }) {
+  const [i, setI] = React.useState(0);
+  const v = videos[i];
+  const next = () => { if (i + 1 < videos.length) setI(i + 1); else onDone(); };
+  return (
+    <div className="absolute inset-0 bg-ink">
+      <video key={v.id} src={v.video_url} autoPlay muted playsInline
+        poster={v.poster_url || undefined} onEnded={next} onError={next}
+        className="w-full h-full object-cover" />
+      <div className="absolute inset-0 nm-scanlines opacity-30 pointer-events-none" />
+      <div className="absolute bottom-6 left-6 font-mono text-[10px] tracking-[0.35em] text-chrome/60">{i + 1} / {videos.length}</div>
+      <button onClick={onDone}
+        className="absolute bottom-6 right-6 font-mono text-[10px] tracking-[0.3em] border border-white/25 rounded-full px-5 py-2.5 text-chrome/70 hover:border-ice hover:text-ice transition">
+        {skipLabel} ▸
+      </button>
+    </div>
+  );
+}
+
 export default function Home() {
   const [lang, setLang] = React.useState(localStorage.getItem('nm_lang') || 'en');
   const t = T[lang];
@@ -21,8 +41,12 @@ export default function Home() {
   const [videos, setVideos] = React.useState([]);
   const [active, setActive] = React.useState(null);
   const [error, setError] = React.useState(null);
-  const [showIntro, setShowIntro] = React.useState(true);
   const [heroIdx, setHeroIdx] = React.useState(0);
+  // ---- intro animations (two clips) played before the hero image rotation ----
+  const [introVideos, setIntroVideos] = React.useState(null); // null = still loading
+  const [introDone, setIntroDone] = React.useState(false);
+  // ---- reel picker: click a small reel to play it large ----
+  const [reelPlayer, setReelPlayer] = React.useState(null);
 
   // ---- background soundtrack ----
   const [soundtrack, setSoundtrack] = React.useState(null);
@@ -72,7 +96,7 @@ export default function Home() {
 
   React.useEffect(() => {
     fetchPublicCharacters()
-      .then((rows) => { setCharacters(rows); setActive(rows[0] || null); })
+      .then((rows) => { setCharacters(rows); }) // detail opens on click, not on load
       .catch((e) => setError(e.message));
     fetchPublicVideos()
       .then(setVideos)
@@ -80,6 +104,9 @@ export default function Home() {
     fetchPublicSoundtrack()
       .then(setSoundtrack)
       .catch(() => {}); // soundtrack is optional
+    fetchIntroVideos()
+      .then((rows) => setIntroVideos(rows))
+      .catch(() => setIntroVideos([])); // intro clips are optional
   }, []);
 
   const toggleMusic = () => {
@@ -89,19 +116,21 @@ export default function Home() {
     else { el.pause(); setPlaying(false); }
   };
 
-  // Boot sequence — plays on load, then reveals the main screen
+  // Boot fallback — only when there are no intro clips (otherwise IntroReel drives it).
   React.useEffect(() => {
+    if (introVideos === null) return;        // wait for the fetch to resolve
+    if (introVideos.length > 0) return;      // the two clips will call onDone
     const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const id = setTimeout(() => setShowIntro(false), reduce ? 0 : 3000);
+    const id = setTimeout(() => setIntroDone(true), reduce ? 0 : 2600);
     return () => clearTimeout(id);
-  }, []);
+  }, [introVideos]);
 
-  // Auto-rotate the hero background through every published character
+  // Auto-rotate the hero background — starts only AFTER the intro animations finish.
   React.useEffect(() => {
-    if (characters.length < 2) return;
+    if (!introDone || characters.length < 2) return;
     const id = setInterval(() => setHeroIdx((i) => (i + 1) % characters.length), 5500);
     return () => clearInterval(id);
-  }, [characters.length]);
+  }, [characters.length, introDone]);
 
   const heroItem = characters.length ? characters[heroIdx % characters.length] : null;
 
@@ -116,22 +145,29 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-ink text-chrome overflow-x-hidden">
-      {/* ===== BOOT SEQUENCE — plays on load, then reveals the main screen ===== */}
-      {showIntro && (
-        <div className="nm-intro fixed inset-0 z-[100] bg-ink flex flex-col items-center justify-center gap-6 px-6 pointer-events-none">
-          <div className="font-mono text-[10px] tracking-[0.5em] text-ice/80">{t.introEyebrow}</div>
-          <div className="font-display text-3xl sm:text-5xl tracking-[0.3em] text-center">NEURA MUSE</div>
-          <div className="w-[280px] h-px bg-white/12 relative overflow-hidden">
-            <div className="nm-introbar absolute left-0 top-0 h-full bg-gradient-to-r from-ice to-nova" />
-          </div>
-          <div className="font-mono text-[9px] tracking-[0.4em] text-chrome/40">{t.introFooter}</div>
+      {/* ===== INTRO — plays the two animation clips (or the boot sequence), then reveals ===== */}
+      {!introDone && (
+        <div className="fixed inset-0 z-[100] bg-ink">
+          {introVideos && introVideos.length > 0 ? (
+            <IntroReel videos={introVideos} onDone={() => setIntroDone(true)}
+              skipLabel={lang === 'zh' ? '跳過' : lang === 'ja' ? 'スキップ' : 'SKIP'} />
+          ) : (
+            <div className="nm-intro absolute inset-0 flex flex-col items-center justify-center gap-6 px-6 pointer-events-none">
+              <div className="font-mono text-[10px] tracking-[0.5em] text-ice/80">{t.introEyebrow}</div>
+              <div className="font-display text-3xl sm:text-5xl tracking-[0.3em] text-center">NEURA MUSE</div>
+              <div className="w-[280px] h-px bg-white/12 relative overflow-hidden">
+                <div className="nm-introbar absolute left-0 top-0 h-full bg-gradient-to-r from-ice to-nova" />
+              </div>
+              <div className="font-mono text-[9px] tracking-[0.4em] text-chrome/40">{t.introFooter}</div>
 
-          {/* 跑馬燈 marquee */}
-          <div className="absolute bottom-10 inset-x-0 overflow-hidden border-y border-white/[0.08] py-2">
-            <div className="nm-marquee whitespace-nowrap font-mono text-[10px] tracking-[0.4em] text-chrome/35">
-              <span>{marqueeText}</span><span aria-hidden="true">{marqueeText}</span>
+              {/* 跑馬燈 marquee */}
+              <div className="absolute bottom-10 inset-x-0 overflow-hidden border-y border-white/[0.08] py-2">
+                <div className="nm-marquee whitespace-nowrap font-mono text-[10px] tracking-[0.4em] text-chrome/35">
+                  <span>{marqueeText}</span><span aria-hidden="true">{marqueeText}</span>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -219,8 +255,8 @@ export default function Home() {
             </div>
           )}
           <div className="flex flex-wrap justify-center gap-4">
-            <a href="#lab" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg bg-gradient-to-r from-ice to-nova text-ink">{t.ctaUpload}</a>
-            <a href="#archive" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">{t.ctaEnter}</a>
+            <a href="/daily" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg bg-gradient-to-r from-ice to-nova text-ink">{t.ctaDaily}</a>
+            <a href="/divination" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">{t.ctaOracle}</a>
             <a href="#videos" className="font-display text-xs tracking-[0.25em] px-7 py-4 rounded-lg border border-nova/50 text-nova hover:bg-nova/10 transition">{t.ctaVideo}</a>
           </div>
         </motion.div>
@@ -244,8 +280,50 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+
+          {/* ---- horizontally-scrollable reel picker: 5 per row, swipe right, click to play large ---- */}
+          <div className="mt-12">
+            <div className="font-mono text-[10px] tracking-[0.3em] text-chrome/40 mb-4">{t.pickReel}</div>
+            <div className="flex gap-4 overflow-x-auto no-scrollbar pb-3 snap-x snap-mandatory">
+              {videos.map((v) => (
+                <button key={v.id} onClick={() => setReelPlayer(v)}
+                  className="group relative flex-shrink-0 snap-start w-[46%] sm:w-[30%] lg:w-[calc((100%-4rem)/5)] aspect-[2/3] rounded-xl overflow-hidden border border-white/12 hover:border-ice transition">
+                  {v.poster_url ? (
+                    <img src={v.poster_url} alt={v.title} className="absolute inset-0 w-full h-full object-cover object-top" />
+                  ) : (
+                    <video src={v.video_url} muted playsInline preload="metadata"
+                      className="absolute inset-0 w-full h-full object-cover object-top" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-transparent to-transparent" />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                    <span className="w-11 h-11 rounded-full bg-ink/70 border border-ice/50 flex items-center justify-center text-ice">▶</span>
+                  </div>
+                  {v.title && <div className="absolute bottom-2 left-2 right-2 font-mono text-[9px] tracking-[0.2em] text-chrome/80 truncate">{v.title}</div>}
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
       )}
+
+      {/* ---- reel player modal ---- */}
+      <AnimatePresence>
+        {reelPlayer && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setReelPlayer(null)}
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-ink/90 backdrop-blur-md px-4 py-10">
+            <motion.div initial={{ scale: 0.94, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()} className="w-full max-w-3xl">
+              <video src={reelPlayer.video_url} controls autoPlay playsInline
+                poster={reelPlayer.poster_url || undefined}
+                className="w-full max-h-[78vh] rounded-2xl border border-white/15 bg-ink object-contain" />
+              {reelPlayer.title && <div className="mt-3 text-center font-display tracking-[0.2em] text-sm">{reelPlayer.title}</div>}
+              <button onClick={() => setReelPlayer(null)}
+                className="mt-3 mx-auto block font-mono text-[10px] tracking-[0.3em] text-chrome/50 hover:text-ice transition">✕ CLOSE</button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <section id="archive" className="max-w-7xl mx-auto px-8 lg:px-20 py-24">
         <h2 className="font-display tracking-[0.25em] text-2xl mb-10">{t.secArchive}</h2>
@@ -255,33 +333,45 @@ export default function Home() {
             <CharacterCard key={c.id} character={c} active={active && active.id === c.id} onSelect={() => setActive(c)} lang={lang} />
           ))}
         </div>
+      </section>
+
+      {/* ---- character detail modal — opens in place on click, not pinned to the bottom ---- */}
+      <AnimatePresence>
         {active && (
-          <motion.div key={active.id} initial={{ opacity: 0, scale: 1.02 }} animate={{ opacity: 1, scale: 1 }}
-            className="grid lg:grid-cols-2 rounded-2xl border border-white/15 overflow-hidden bg-white/[0.03] backdrop-blur-xl">
-            {active.video_url ? (
-              <div className="relative min-h-[320px] bg-ink">
-                <video src={active.video_url} controls autoPlay muted loop playsInline
-                  poster={active.cover_image_url} className="w-full h-full object-cover min-h-[320px]" />
-                <div className="absolute top-4 left-4 font-mono text-[9px] tracking-[0.3em] px-2.5 py-1 rounded-full bg-ink/70 border border-ice/40 text-ice">▶ {t.motionReel}</div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setActive(null)}
+            className="fixed inset-0 z-[95] flex items-center justify-center bg-ink/85 backdrop-blur-md px-4 py-10 overflow-y-auto">
+            <motion.div key={active.id} initial={{ scale: 0.94, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 160, damping: 18 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-4xl grid lg:grid-cols-2 rounded-2xl border border-white/15 overflow-hidden bg-ink/95 backdrop-blur-xl">
+              <button onClick={() => setActive(null)}
+                className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-ink/70 border border-white/20 text-chrome/70 hover:border-ice hover:text-ice transition">✕</button>
+              {active.video_url ? (
+                <div className="relative min-h-[320px] bg-ink">
+                  <video src={active.video_url} controls autoPlay muted loop playsInline
+                    poster={active.cover_image_url} className="w-full h-full object-cover min-h-[320px]" />
+                  <div className="absolute top-4 left-4 font-mono text-[9px] tracking-[0.3em] px-2.5 py-1 rounded-full bg-ink/70 border border-ice/40 text-ice">▶ {t.motionReel}</div>
+                </div>
+              ) : (
+                <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover min-h-[320px]" />
+              )}
+              <div className="p-8 lg:p-10">
+                <div className="font-display text-2xl tracking-[0.2em] mb-6">{active.name}</div>
+                <dl className="grid grid-cols-2 gap-x-8 text-sm">
+                  {[['ARMOR TYPE', active.armor_type], ['WEAPON SYSTEM', active.weapon_system], ['ENERGY CORE', active.energy_core], ['RARITY', active.rarity_level]].map(([k, v]) => (
+                    <div key={k} className="py-3 border-b border-white/10">
+                      <dt className="font-mono text-[10px] tracking-[0.3em] text-chrome/40 mb-1">{k}</dt>
+                      <dd>{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-6 font-light leading-relaxed text-chrome/70">{active.cinematic_description}</p>
               </div>
-            ) : (
-              <img src={active.cover_image_url} alt={active.name} className="w-full h-full object-cover min-h-[320px]" />
-            )}
-            <div className="p-10">
-              <div className="font-display text-2xl tracking-[0.2em] mb-6">{active.name}</div>
-              <dl className="grid grid-cols-2 gap-x-8 text-sm">
-                {[['ARMOR TYPE', active.armor_type], ['WEAPON SYSTEM', active.weapon_system], ['ENERGY CORE', active.energy_core], ['RARITY', active.rarity_level]].map(([k, v]) => (
-                  <div key={k} className="py-3 border-b border-white/10">
-                    <dt className="font-mono text-[10px] tracking-[0.3em] text-chrome/40 mb-1">{k}</dt>
-                    <dd>{v}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="mt-6 font-light leading-relaxed text-chrome/70">{active.cinematic_description}</p>
-            </div>
+            </motion.div>
           </motion.div>
         )}
-      </section>
+      </AnimatePresence>
 
       {/* ===== UPLOAD LAB — moved to the bottom; supports many images at once ===== */}
       <section id="lab" className="max-w-5xl mx-auto px-8 lg:px-20 py-24">

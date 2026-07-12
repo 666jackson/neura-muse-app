@@ -10,6 +10,7 @@ import AdminLogin from './pages/AdminLogin.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import VideoManager from './pages/VideoManager.jsx';
 import AudioManager from './pages/AudioManager.jsx';
+import IntroManager from './pages/IntroManager.jsx';
 import { onAuthChange, supabase } from './lib/supabase.js';
 
 export default function App() {
@@ -31,6 +32,7 @@ export default function App() {
       <Route path="/admin/login" element={<AdminLogin session={session} />} />
       <Route path="/admin/dashboard" element={<AdminDashboard session={session} />} />
       <Route path="/admin/videos" element={<VideoManager session={session} />} />
+      <Route path="/admin/intro" element={<IntroManager session={session} />} />
       <Route path="/admin/audio" element={<AudioManager session={session} />} />
     </Routes>
   );

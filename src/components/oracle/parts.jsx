@@ -6,7 +6,7 @@ import { NEXT_LANG_LABEL, nextLang } from '../../i18n.js';
 import { fetchPublicCharacters } from '../../lib/supabase.js';
 import {
   RARITIES, RARITY_BY_KEY, BY_KEY,
-  dailyMuse, drawOne, ZODIAC, QUIZ, scoreQuiz, museFromCharacter,
+  dailyMuse, drawOne, ZODIAC, QUIZ, scoreQuiz, museFromCharacter, storyFor,
   PREMIUM_ITEMS, PREMIUM_CODE, PREMIUM_KEY
 } from '../../lib/oracle.js';
 
@@ -42,6 +42,29 @@ function CardArt({ muse, video = false }) {
   return <div className="absolute inset-0" style={posterStyle((muse && muse.color) || '#7dd3fc')} />;
 }
 
+function pickRandom(arr) { return arr && arr.length ? arr[Math.floor(Math.random() * arr.length)] : null; }
+
+// Click-through info modal for a pulled / selected muse.
+export function MuseModal({ open, muse, rarity, lang, t, onClose }) {
+  return (
+    <AnimatePresence>
+      {open && muse && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onClick={onClose}
+          className="fixed inset-0 z-[130] flex items-center justify-center bg-ink/85 backdrop-blur-md px-5 py-10 overflow-y-auto">
+          <motion.div initial={{ scale: 0.9, y: 20, opacity: 0 }} animate={{ scale: 1, y: 0, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 160, damping: 18 }}
+            onClick={(e) => e.stopPropagation()} className="w-full max-w-3xl">
+            <MusePlate archetype={muse} rarity={rarity} lang={lang} t={t} typed />
+            <button onClick={onClose}
+              className="mt-5 mx-auto block font-mono text-[10px] tracking-[0.3em] text-chrome/50 hover:text-ice transition">✕ {t.tapDismiss}</button>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // ---- page-local copy (UI chrome) ------------------------------------------
 export const UI = {
   en: {
@@ -50,7 +73,7 @@ export const UI = {
     dailyEyebrow: "TODAY'S MUSE", dailyNote: 'Resets at local midnight — same reading for everyone, today only.',
     secOracle: 'ORACLE — FIND YOUR MUSE', tabZodiac: 'BY STAR SIGN', tabQuiz: 'PSYCHE TEST',
     pickSign: 'Select your constellation', appraising: 'APPRAISING SIGNATURE',
-    yourMuse: 'YOUR MUSE ARCHETYPE', again: 'READ AGAIN', next: 'NEXT ▸',
+    yourMuse: 'YOUR MUSE ARCHETYPE', again: 'READ AGAIN', next: 'NEXT ▸', storyTitle: 'ORIGIN STORY', viewInfo: 'DETAILS',
     secGacha: 'PROTOTYPE GACHA', pull1: 'PULL ×1', pull10: 'PULL ×10', pulling: 'SUMMONING…',
     history: 'RECENT PULLS', urHit: 'ONE OF ONE', tapDismiss: 'tap to continue',
     secRates: 'DROP RATES', rateNote: 'Published pull rates · UR is a guaranteed one-of-one frame.',
@@ -64,7 +87,7 @@ export const UI = {
     dailyEyebrow: '今日繆斯', dailyNote: '每日本地午夜重置——今日之內，眾人共享同一則神諭。',
     secOracle: '神諭 — 尋找你的繆斯', tabZodiac: '依星座', tabQuiz: '心理測驗',
     pickSign: '選擇你的星座', appraising: '正在鑑定訊號',
-    yourMuse: '你的繆斯原型', again: '重新占卜', next: '下一題 ▸',
+    yourMuse: '你的繆斯原型', again: '重新占卜', next: '下一題 ▸', storyTitle: '起源故事', viewInfo: '查看資訊',
     secGacha: '原型抽卡', pull1: '單抽 ×1', pull10: '十連 ×10', pulling: '召喚中…',
     history: '近期抽取', urHit: '獨一無二', tapDismiss: '點擊繼續',
     secRates: '稀有度機率', rateNote: '公開抽取機率 · UR 為保證的唯一機體。',
@@ -78,7 +101,7 @@ export const UI = {
     dailyEyebrow: '今日のミューズ', dailyNote: 'ローカル深夜にリセット——今日だけ、皆同じ神託。',
     secOracle: '神託 — あなたのミューズ', tabZodiac: '星座で', tabQuiz: '心理テスト',
     pickSign: '星座を選択', appraising: 'シグネチャを鑑定中',
-    yourMuse: 'あなたのミューズ原型', again: 'もう一度', next: '次へ ▸',
+    yourMuse: 'あなたのミューズ原型', again: 'もう一度', next: '次へ ▸', storyTitle: 'オリジンストーリー', viewInfo: '詳細',
     secGacha: 'プロトタイプ・ガチャ', pull1: '単発 ×1', pull10: '10連 ×10', pulling: '召喚中…',
     history: '最近の結果', urHit: 'ワン・オブ・ワン', tapDismiss: 'タップで続行',
     secRates: '排出率', rateNote: '公開排出率 · UR は保証されたワン・オブ・ワン。',
@@ -170,18 +193,20 @@ export function DailyBlock({ lang, t }) {
 
 // ---- ORACLE block (zodiac + quiz) -----------------------------------------
 export function OracleBlock({ lang, t }) {
+  const pool = useMusePool();
   const [tab, setTab] = React.useState('zodiac');
   const [phase, setPhase] = React.useState('idle'); // idle | scanning | result
   const [result, setResult] = React.useState(null);
+  const [portrait, setPortrait] = React.useState(null); // random DB muse for the visual
   const [qi, setQi] = React.useState(0);
   const [answers, setAnswers] = React.useState([]);
   const quiz = QUIZ[lang] || QUIZ.en;
 
   const reveal = (archetype) => {
-    setPhase('scanning'); setResult(archetype);
+    setPhase('scanning'); setResult(archetype); setPortrait(pickRandom(pool));
     setTimeout(() => setPhase('result'), 1900);
   };
-  const restart = () => { setPhase('idle'); setResult(null); setQi(0); setAnswers([]); };
+  const restart = () => { setPhase('idle'); setResult(null); setPortrait(null); setQi(0); setAnswers([]); };
 
   const pickSign = (z) => reveal(BY_KEY[z.archetype]);
   const pickAnswer = (k) => {
@@ -218,7 +243,13 @@ export function OracleBlock({ lang, t }) {
         {phase === 'result' && result && (
           <motion.div key="res" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <div className="font-mono text-[10px] tracking-[0.35em] text-ice mb-3">{t.yourMuse}</div>
-            <MusePlate archetype={result} lang={lang} t={t} typed />
+            <MusePlate archetype={{ ...result, image: (portrait && portrait.image) || result.image, video: portrait && portrait.video }}
+              lang={lang} t={t} typed />
+            {/* story / lore */}
+            <div className="mt-6 rounded-2xl border border-white/12 bg-white/[0.03] p-6 lg:p-8">
+              <div className="font-mono text-[9px] tracking-[0.35em] mb-3" style={{ color: result.color }}>◆ {t.storyTitle}</div>
+              <p className="font-light leading-loose text-chrome/80 whitespace-pre-line">{storyFor(result.key, lang)}</p>
+            </div>
             <button onClick={restart}
               className="mt-6 font-display text-[11px] tracking-[0.25em] px-6 py-3 rounded-lg border border-ice/50 text-ice hover:bg-ice/10 transition">
               {t.again} ↺
@@ -276,6 +307,7 @@ export function GachaBlock({ lang, t }) {
   const [busy, setBusy] = React.useState(false);
   const [history, setHistory] = React.useState([]);
   const [urHit, setUrHit] = React.useState(null);
+  const [info, setInfo] = React.useState(null); // { muse, rarity } — click-through details
 
   const doPull = (n) => {
     if (busy) return;
@@ -303,31 +335,54 @@ export function GachaBlock({ lang, t }) {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 min-h-[120px]">
-        <AnimatePresence>
-          {reveal.map((r, i) => {
-            const gold = r.rarity.key === 'SSR' || r.rarity.key === 'UR';
-            return (
-              <motion.div key={r.id} initial={{ opacity: 0, rotateY: 90, scale: 0.8 }}
-                animate={{ opacity: 1, rotateY: 0, scale: 1 }}
-                transition={{ delay: i * 0.08, duration: 0.5, ease: 'easeOut' }}>
-                <div className={'relative aspect-[0.72] rounded-xl overflow-hidden border-2 ' + (gold ? 'nm-gold-frame' : '')}
-                  style={{ borderColor: r.rarity.color + (gold ? 'ff' : '55'), boxShadow: `0 0 ${gold ? 34 : 14}px ${r.rarity.color}${gold ? '99' : '44'}` }}>
-                  <CardArt muse={r.archetype} />
-                  <div className="absolute inset-0 nm-scanlines opacity-30 pointer-events-none" />
-                  {gold && <div className="absolute inset-0 nm-holo-sweep pointer-events-none" />}
-                  <div className="absolute top-2 left-2 font-mono text-[9px] tracking-[0.2em] px-1.5 py-0.5 rounded-full"
-                    style={{ color: r.rarity.color, background: '#04050dcc', border: '1px solid ' + r.rarity.color + '66' }}>{r.rarity.key}</div>
-                  <div className="absolute bottom-3 left-3 right-3">
-                    <div className="font-display text-[11px] tracking-[0.1em]">{r.archetype.name[lang] || r.archetype.name.en}</div>
-                    <div className="font-mono text-[8px] tracking-[0.2em]" style={{ color: r.archetype.color }}>{r.archetype.codename}</div>
+      {/* charging / summon animation while the pull resolves */}
+      <AnimatePresence>
+        {busy && (
+          <motion.div key="charge" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="relative h-[300px] rounded-2xl border border-ice/25 overflow-hidden flex items-center justify-center mb-4"
+            style={posterStyle('#a78bfa')}>
+            <div className="absolute inset-0 nm-grid opacity-60" />
+            <div className="nm-radar absolute w-[380px] h-[380px] rounded-full" style={{ borderColor: '#7dd3fc55' }} />
+            <div className="nm-radar absolute w-[380px] h-[380px] rounded-full" style={{ borderColor: '#f9a8d455', animationDelay: '0.6s' }} />
+            <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="nm-scanline" /></div>
+            <motion.div animate={{ opacity: [1, 0.3, 1], scale: [1, 1.06, 1] }} transition={{ duration: 0.85, repeat: Infinity }}
+              className="relative font-mono text-[12px] tracking-[0.45em] text-ice">{t.pulling}</motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* reveal — big, clickable cards */}
+      {!busy && reveal.length > 0 && (
+        <div className={reveal.length === 1 ? 'flex justify-center' : 'grid grid-cols-2 sm:grid-cols-3 gap-5'}>
+          <AnimatePresence>
+            {reveal.map((r, i) => {
+              const gold = r.rarity.key === 'SSR' || r.rarity.key === 'UR';
+              return (
+                <motion.button key={r.id} initial={{ opacity: 0, rotateY: 100, scale: 0.75 }}
+                  animate={{ opacity: 1, rotateY: 0, scale: 1 }}
+                  transition={{ delay: i * 0.09, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ y: -6 }}
+                  onClick={() => setInfo({ muse: r.archetype, rarity: r.rarity })}
+                  className={'group relative ' + (reveal.length === 1 ? 'w-[min(360px,82vw)]' : 'w-full')}>
+                  <div className={'relative aspect-[0.72] rounded-2xl overflow-hidden border-2 ' + (gold ? 'nm-gold-frame' : '')}
+                    style={{ borderColor: r.rarity.color + (gold ? 'ff' : '55'), boxShadow: `0 0 ${gold ? 46 : 18}px ${r.rarity.color}${gold ? '99' : '44'}` }}>
+                    <CardArt muse={r.archetype} />
+                    <div className="absolute inset-0 nm-scanlines opacity-30 pointer-events-none" />
+                    {gold && <div className="absolute inset-0 nm-holo-sweep pointer-events-none" />}
+                    <div className="absolute top-2.5 left-2.5 font-mono text-[10px] tracking-[0.2em] px-2 py-1 rounded-full"
+                      style={{ color: r.rarity.color, background: '#04050dcc', border: '1px solid ' + r.rarity.color + '66' }}>{r.rarity.key}</div>
+                    <div className="absolute bottom-4 left-4 right-4 text-left">
+                      <div className="font-display text-sm tracking-[0.1em]">{r.archetype.name[lang] || r.archetype.name.en}</div>
+                      <div className="font-mono text-[9px] tracking-[0.2em]" style={{ color: r.archetype.color }}>{r.archetype.codename}</div>
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 py-1.5 text-center font-mono text-[8px] tracking-[0.3em] bg-ink/75 text-ice opacity-0 group-hover:opacity-100 transition">▸ {t.viewInfo}</div>
                   </div>
-                </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+                </motion.button>
+              );
+            })}
+          </AnimatePresence>
+        </div>
+      )}
 
       {history.length > 0 && (
         <div className="mt-8">
@@ -366,6 +421,9 @@ export function GachaBlock({ lang, t }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* click-through details for any pulled card */}
+      <MuseModal open={!!info} muse={info && info.muse} rarity={info && info.rarity} lang={lang} t={t} onClose={() => setInfo(null)} />
     </div>
   );
 }
@@ -390,9 +448,16 @@ export function RateWall({ t }) {
 
 // ---- VAULT block -----------------------------------------------------------
 export function VaultBlock({ lang, t }) {
+  const pool = useMusePool();
   const [unlocked, setUnlocked] = React.useState(() => localStorage.getItem(PREMIUM_KEY) === '1');
   const [code, setCode] = React.useState('');
   const [err, setErr] = React.useState(false);
+
+  // Randomly assign one of your uploaded DB images to each premium slot (stable per load).
+  const picks = React.useMemo(() => {
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    return PREMIUM_ITEMS.map((item, i) => ({ item, muse: shuffled.length ? shuffled[i % shuffled.length] : null }));
+  }, [pool]);
 
   const tryUnlock = () => {
     if (code.trim().toUpperCase() === PREMIUM_CODE) {
@@ -425,26 +490,30 @@ export function VaultBlock({ lang, t }) {
       {err && <div className="font-mono text-[10px] tracking-[0.2em] text-red-400 mb-4">✕ {t.wrong}</div>}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {PREMIUM_ITEMS.map((item) => (
-          <HoloCard key={item.key} color={item.color} glare={unlocked}
-            className="overflow-hidden border border-white/12" style={{ background: 'rgba(255,255,255,0.03)' }}>
-            <div className="relative aspect-[0.8]" style={posterStyle(item.color)}>
-              <div className="absolute inset-0 nm-scanlines opacity-40" />
-              <div className="absolute top-3 left-3 font-mono text-[8px] tracking-[0.25em] px-2 py-1 rounded-full border"
-                style={{ color: item.color, borderColor: item.color + '66', background: '#04050dcc' }}>{item.kind}</div>
-              {!unlocked && (
-                <div className="absolute inset-0 backdrop-blur-lg bg-ink/50 flex flex-col items-center justify-center gap-2">
-                  <span className="text-2xl">🔒</span>
-                  <span className="font-mono text-[9px] tracking-[0.3em] text-chrome/60">{t.locked}</span>
+        {picks.map(({ item, muse }) => {
+          const art = muse ? { image: muse.image, video: unlocked ? muse.video : null, color: item.color } : { color: item.color };
+          return (
+            <HoloCard key={item.key} color={item.color} glare={unlocked}
+              className="overflow-hidden border border-white/12" style={{ background: 'rgba(255,255,255,0.03)' }}>
+              <div className="relative aspect-[0.8] overflow-hidden">
+                <CardArt muse={art} video={unlocked && item.kind === 'FILM'} />
+                <div className="absolute inset-0 nm-scanlines opacity-30 pointer-events-none" />
+                <div className="absolute top-3 left-3 font-mono text-[8px] tracking-[0.25em] px-2 py-1 rounded-full border z-10"
+                  style={{ color: item.color, borderColor: item.color + '66', background: '#04050dcc' }}>{item.kind}</div>
+                {!unlocked && (
+                  <div className="absolute inset-0 backdrop-blur-xl bg-ink/60 flex flex-col items-center justify-center gap-2">
+                    <span className="text-2xl">🔒</span>
+                    <span className="font-mono text-[9px] tracking-[0.3em] text-chrome/60">{t.locked}</span>
+                  </div>
+                )}
+                <div className="absolute bottom-3 left-3 right-3 z-10">
+                  <div className="font-display text-[12px] tracking-[0.08em]">{item.title[lang] || item.title.en}</div>
+                  {unlocked && <div className="font-light text-[10px] text-chrome/60 mt-1 leading-snug">{item.blurb[lang] || item.blurb.en}</div>}
                 </div>
-              )}
-              <div className="absolute bottom-3 left-3 right-3">
-                <div className="font-display text-[12px] tracking-[0.08em]">{item.title[lang] || item.title.en}</div>
-                {unlocked && <div className="font-light text-[10px] text-chrome/60 mt-1 leading-snug">{item.blurb[lang] || item.blurb.en}</div>}
               </div>
-            </div>
-          </HoloCard>
-        ))}
+            </HoloCard>
+          );
+        })}
       </div>
     </div>
   );
