@@ -19,6 +19,8 @@ export default function AdminDashboard({ session }) {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [progress, setProgress] = React.useState(null); // batch upload { done, total }
+  const [dropOver, setDropOver] = React.useState(false);
+  const imgInputRef = React.useRef(null);
 
   React.useEffect(() => {
     if (session === null) return; // still resolving
@@ -49,24 +51,24 @@ export default function AdminDashboard({ session }) {
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
-  // Batch quick-add: drop many images → each is uploaded, auto-named, auto-analyzed and saved as a character.
-  const quickUpload = async (e) => {
-    const files = Array.from(e.target.files || []).filter((f) => f.type && f.type.startsWith('image'));
-    e.target.value = '';
+  // Batch quick-add: drag or pick many images → each is uploaded, auto-named, auto-analyzed and saved.
+  // Uploads run in parallel (much faster for a big drop) while numbering stays deterministic.
+  const processImages = async (fileList) => {
+    const files = Array.from(fileList || []).filter((f) => f.type && f.type.startsWith('image'));
     if (!files.length) return;
     setBusy(true); setError(null); setProgress({ done: 0, total: files.length });
+    let done = 0;
     try {
-      let n = rows.length;
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
+      const base = rows.length;
+      await Promise.all(files.map(async (f, i) => {
         const url = await uploadAsset('characters', f, 'covers/');
-        n += 1;
-        await upsertCharacter({ ...characterFromAnalysis(analyzeFile(f), url, n), order_index: n });
-        setProgress({ done: i + 1, total: files.length });
-      }
+        await upsertCharacter({ ...characterFromAnalysis(analyzeFile(f), url, base + i + 1), order_index: base + i + 1 });
+        done += 1; setProgress({ done, total: files.length });
+      }));
       setRows(await fetchAllCharacters());
     } catch (err) { setError(err.message); } finally { setBusy(false); setProgress(null); }
   };
+  const quickUpload = (e) => { const fl = e.target.files; e.target.value = ''; processImages(fl); };
 
   const uploadModel = async (e) => {
     const f = e.target.files[0];
@@ -149,6 +151,20 @@ export default function AdminDashboard({ session }) {
 
       {error && <div className="font-mono text-xs text-red-400 mb-6">▮ {error}</div>}
       <div className="font-mono text-[10px] tracking-wider text-chrome/40 mb-4">⚡ {t.quickAddHint}</div>
+
+      {/* ---- DRAG-AND-DROP ZONE — drag images straight from Photos / Finder ---- */}
+      <div
+        onDragOver={(e) => { e.preventDefault(); setDropOver(true); }}
+        onDragLeave={() => setDropOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDropOver(false); processImages(e.dataTransfer.files); }}
+        onClick={() => imgInputRef.current && imgInputRef.current.click()}
+        className={'mb-6 rounded-2xl border border-dashed p-8 text-center cursor-pointer transition ' + (dropOver ? 'border-ice bg-ice/10' : 'border-white/20 hover:border-ice/60') + (busy ? ' opacity-50 pointer-events-none' : '')}>
+        <div className="text-2xl mb-2">⤓</div>
+        <div className="font-display text-xs tracking-[0.25em] mb-1">{t.dropImages}</div>
+        <div className="font-mono text-[9px] tracking-[0.3em] text-chrome/45">{t.dropMany}</div>
+        <input ref={imgInputRef} type="file" accept="image/*" multiple hidden onChange={quickUpload} />
+      </div>
+
       {progress && (
         <div className="font-mono text-xs text-ice mb-6">▮ {t.adding} {progress.done}/{progress.total}…</div>
       )}
