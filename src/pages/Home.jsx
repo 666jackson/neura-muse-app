@@ -14,26 +14,6 @@ const NAV_AREAS = [
   { path: '/vault',      label: { en: 'VAULT',  zh: '密庫',    ja: '蔵' } }
 ];
 
-// Plays the two intro clips full-screen in sequence, then reveals the site.
-function IntroReel({ videos, onDone, skipLabel }) {
-  const [i, setI] = React.useState(0);
-  const v = videos[i];
-  const next = () => { if (i + 1 < videos.length) setI(i + 1); else onDone(); };
-  return (
-    <div className="absolute inset-0 bg-ink">
-      <video key={v.id} src={v.video_url} autoPlay muted playsInline
-        poster={v.poster_url || undefined} onEnded={next} onError={next}
-        className="w-full h-full object-cover" />
-      <div className="absolute inset-0 nm-scanlines opacity-30 pointer-events-none" />
-      <div className="absolute bottom-6 left-6 font-mono text-[10px] tracking-[0.35em] text-chrome/60">{i + 1} / {videos.length}</div>
-      <button onClick={onDone}
-        className="absolute bottom-6 right-6 font-mono text-[10px] tracking-[0.3em] border border-white/25 rounded-full px-5 py-2.5 text-chrome/70 hover:border-ice hover:text-ice transition">
-        {skipLabel} ▸
-      </button>
-    </div>
-  );
-}
-
 export default function Home() {
   const [lang, setLang] = React.useState(localStorage.getItem('nm_lang') || 'en');
   const t = T[lang];
@@ -45,6 +25,7 @@ export default function Home() {
   // ---- intro animations (two clips) played before the hero image rotation ----
   const [introVideos, setIntroVideos] = React.useState(null); // null = still loading
   const [introDone, setIntroDone] = React.useState(false);
+  const [introIdx, setIntroIdx] = React.useState(0);
   // ---- reel picker: click a small reel to play it large ----
   const [reelPlayer, setReelPlayer] = React.useState(null);
 
@@ -116,7 +97,7 @@ export default function Home() {
     else { el.pause(); setPlaying(false); }
   };
 
-  // Boot fallback — only when there are no intro clips (otherwise IntroReel drives it).
+  // Boot fallback — only when there are no intro clips (otherwise the hero-background clips drive it).
   React.useEffect(() => {
     if (introVideos === null) return;        // wait for the fetch to resolve
     if (introVideos.length > 0) return;      // the two clips will call onDone
@@ -134,6 +115,17 @@ export default function Home() {
 
   const heroItem = characters.length ? characters[heroIdx % characters.length] : null;
 
+  // Intro clips play as the hero BACKGROUND (behind the title), then hand off to the image rotation.
+  const playingIntro = !introDone && !!introVideos && introVideos.length > 0;
+  const introClip = playingIntro ? introVideos[Math.min(introIdx, introVideos.length - 1)] : null;
+  const advanceIntro = () => setIntroIdx((i) => {
+    if (i + 1 < introVideos.length) return i + 1;
+    setIntroDone(true);
+    return i;
+  });
+  // Boot loader only shows while intro clips are absent (loading, or none uploaded).
+  const showBoot = !introDone && (introVideos === null || introVideos.length === 0);
+
   const marqueeBase = characters.length ? characters.map((c) => c.name).join('   ·   ') : t.tagline;
   const marqueeText = `   ${marqueeBase}   ·   NEURA MUSE   ·   SECTOR 07   `.repeat(3);
 
@@ -145,29 +137,24 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-ink text-chrome overflow-x-hidden">
-      {/* ===== INTRO — plays the two animation clips (or the boot sequence), then reveals ===== */}
-      {!introDone && (
+      {/* ===== BOOT LOADER — only while intro clips are loading / absent ===== */}
+      {showBoot && (
         <div className="fixed inset-0 z-[100] bg-ink">
-          {introVideos && introVideos.length > 0 ? (
-            <IntroReel videos={introVideos} onDone={() => setIntroDone(true)}
-              skipLabel={lang === 'zh' ? '跳過' : lang === 'ja' ? 'スキップ' : 'SKIP'} />
-          ) : (
-            <div className="nm-intro absolute inset-0 flex flex-col items-center justify-center gap-6 px-6 pointer-events-none">
-              <div className="font-mono text-[10px] tracking-[0.5em] text-ice/80">{t.introEyebrow}</div>
-              <div className="font-display text-3xl sm:text-5xl tracking-[0.3em] text-center">NEURA MUSE</div>
-              <div className="w-[280px] h-px bg-white/12 relative overflow-hidden">
-                <div className="nm-introbar absolute left-0 top-0 h-full bg-gradient-to-r from-ice to-nova" />
-              </div>
-              <div className="font-mono text-[9px] tracking-[0.4em] text-chrome/40">{t.introFooter}</div>
+          <div className="nm-intro absolute inset-0 flex flex-col items-center justify-center gap-6 px-6 pointer-events-none">
+            <div className="font-mono text-[10px] tracking-[0.5em] text-ice/80">{t.introEyebrow}</div>
+            <div className="font-display text-3xl sm:text-5xl tracking-[0.3em] text-center">NEURA MUSE</div>
+            <div className="w-[280px] h-px bg-white/12 relative overflow-hidden">
+              <div className="nm-introbar absolute left-0 top-0 h-full bg-gradient-to-r from-ice to-nova" />
+            </div>
+            <div className="font-mono text-[9px] tracking-[0.4em] text-chrome/40">{t.introFooter}</div>
 
-              {/* 跑馬燈 marquee */}
-              <div className="absolute bottom-10 inset-x-0 overflow-hidden border-y border-white/[0.08] py-2">
-                <div className="nm-marquee whitespace-nowrap font-mono text-[10px] tracking-[0.4em] text-chrome/35">
-                  <span>{marqueeText}</span><span aria-hidden="true">{marqueeText}</span>
-                </div>
+            {/* 跑馬燈 marquee */}
+            <div className="absolute bottom-10 inset-x-0 overflow-hidden border-y border-white/[0.08] py-2">
+              <div className="nm-marquee whitespace-nowrap font-mono text-[10px] tracking-[0.4em] text-chrome/35">
+                <span>{marqueeText}</span><span aria-hidden="true">{marqueeText}</span>
               </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 
@@ -195,34 +182,48 @@ export default function Home() {
       </header>
 
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Full-bleed centered background reel — auto-rotates through every character with a crossfade */}
-        {heroItem && (
+        {/* Full-bleed background — the two intro clips play FIRST (behind the title), then the
+            character reel auto-rotates through every character with a crossfade. */}
+        {(playingIntro || heroItem) && (
           <div className="absolute inset-0 z-0">
             <AnimatePresence>
-              <motion.div key={heroItem.id}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                transition={{ duration: 1.4, ease: 'easeInOut' }}
-                className="absolute inset-0">
-                <div className="absolute inset-0 nm-ken">
-                  {heroItem.video_url ? (
-                    <video src={heroItem.video_url} autoPlay muted loop playsInline
-                      poster={heroItem.cover_image_url} className="absolute inset-0 w-full h-full object-cover object-top" />
-                  ) : (
-                    <img src={heroItem.cover_image_url} alt={heroItem.name} className="absolute inset-0 w-full h-full object-cover object-top" />
-                  )}
-                </div>
-              </motion.div>
+              {playingIntro ? (
+                <motion.div key={'intro-' + introClip.id}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 1, ease: 'easeInOut' }}
+                  className="absolute inset-0">
+                  <div className="absolute inset-0 nm-ken">
+                    <video key={introClip.id} src={introClip.video_url} autoPlay muted playsInline
+                      poster={introClip.poster_url || undefined}
+                      onEnded={advanceIntro} onError={advanceIntro}
+                      className="absolute inset-0 w-full h-full object-cover object-top" />
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div key={heroItem.id}
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  transition={{ duration: 1.4, ease: 'easeInOut' }}
+                  className="absolute inset-0">
+                  <div className="absolute inset-0 nm-ken">
+                    {heroItem.video_url ? (
+                      <video src={heroItem.video_url} autoPlay muted loop playsInline
+                        poster={heroItem.cover_image_url} className="absolute inset-0 w-full h-full object-cover object-top" />
+                    ) : (
+                      <img src={heroItem.cover_image_url} alt={heroItem.name} className="absolute inset-0 w-full h-full object-cover object-top" />
+                    )}
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
 
             {/* RGB-split glitch flash (chromatic aberration duplicate of the cover) */}
-            {heroItem.cover_image_url && (
+            {!playingIntro && heroItem && heroItem.cover_image_url && (
               <img src={heroItem.cover_image_url} alt="" aria-hidden
                 className="absolute inset-0 w-full h-full object-cover object-top nm-glitch"
                 style={{ filter: 'hue-rotate(150deg) saturate(4)' }} />
             )}
 
             {/* Enhanced cinematic flicker stack */}
-            <div className="absolute inset-0 nm-grid pointer-events-none" />
             <div className="absolute inset-0 nm-scanlines pointer-events-none" />
             <div className="absolute inset-0 overflow-hidden pointer-events-none nm-flicker">
               <div className="nm-scanline" />
@@ -231,6 +232,19 @@ export default function Home() {
 
             {/* Soft fade — keeps centered text readable and blends into the page below */}
             <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink" />
+
+            {/* intro progress + skip (over the background, under the title) */}
+            {playingIntro && (
+              <>
+                <div className="absolute bottom-6 left-6 z-[5] font-mono text-[10px] tracking-[0.35em] text-chrome/60">
+                  {introIdx + 1} / {introVideos.length}
+                </div>
+                <button onClick={() => setIntroDone(true)}
+                  className="absolute bottom-6 right-6 z-[5] font-mono text-[10px] tracking-[0.3em] border border-white/25 rounded-full px-5 py-2.5 text-chrome/70 hover:border-ice hover:text-ice transition">
+                  {lang === 'zh' ? '跳過' : lang === 'ja' ? 'スキップ' : 'SKIP'} ▸
+                </button>
+              </>
+            )}
           </div>
         )}
 
@@ -247,7 +261,7 @@ export default function Home() {
           <div className="text-ice font-mono text-xs tracking-[0.4em] mb-6">{t.heroEyebrow}</div>
           <h1 className="font-display text-5xl lg:text-7xl tracking-widest mb-8">NEURA MUSE</h1>
           <p className="text-chrome/70 font-light leading-relaxed max-w-md mx-auto mb-10">{t.heroDesc}</p>
-          {heroItem && (
+          {heroItem && !playingIntro && (
             <div className="mb-10">
               <div className="font-mono text-[10px] tracking-[0.3em] text-ice mb-1">FASHION MOTION REEL</div>
               <motion.div key={heroItem.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
