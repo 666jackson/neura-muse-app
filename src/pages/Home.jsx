@@ -5,6 +5,15 @@ import CharacterCard from '../components/CharacterCard.jsx';
 import UploadLab from '../components/UploadLab.jsx';
 import { T, NEXT_LANG_LABEL, nextLang } from '../i18n.js';
 
+// Top-nav links to the five stand-alone oracle areas.
+const NAV_AREAS = [
+  { path: '/daily',      label: { en: 'DAILY',  zh: '今日繆斯', ja: '今日' } },
+  { path: '/divination', label: { en: 'ORACLE', zh: '神諭占卜', ja: '神託' } },
+  { path: '/gacha',      label: { en: 'GACHA',  zh: '抽卡',    ja: 'ガチャ' } },
+  { path: '/rates',      label: { en: 'RATES',  zh: '機率',    ja: '排出率' } },
+  { path: '/vault',      label: { en: 'VAULT',  zh: '密庫',    ja: '蔵' } }
+];
+
 export default function Home() {
   const [lang, setLang] = React.useState(localStorage.getItem('nm_lang') || 'en');
   const t = T[lang];
@@ -134,7 +143,10 @@ export default function Home() {
           <a href="#videos" className="hover:text-ice transition">{t.navVideos}</a>
           <a href="#archive" className="hover:text-ice transition">{t.navArchive}</a>
           <a href="#lab" className="hover:text-ice transition">{t.navUpload}</a>
-          <a href="/oracle" className="text-nova/90 hover:text-nova transition">{lang === 'zh' ? '神諭殿' : lang === 'ja' ? '神託' : 'ORACLE'}</a>
+          <span className="w-px h-3 bg-white/15" />
+          {NAV_AREAS.map((a) => (
+            <a key={a.path} href={a.path} className="text-nova/80 hover:text-nova transition">{a.label[lang] || a.label.en}</a>
+          ))}
         </nav>
 
         <div className="flex items-center gap-3">

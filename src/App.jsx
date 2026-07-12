@@ -1,7 +1,11 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.jsx';
-import Oracle from './pages/Oracle.jsx';
+import DailyMuse from './pages/oracle/DailyMuse.jsx';
+import Divination from './pages/oracle/Divination.jsx';
+import Gacha from './pages/oracle/Gacha.jsx';
+import Rates from './pages/oracle/Rates.jsx';
+import Vault from './pages/oracle/Vault.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import VideoManager from './pages/VideoManager.jsx';
@@ -19,7 +23,11 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/oracle" element={<Oracle />} />
+      <Route path="/daily" element={<DailyMuse />} />
+      <Route path="/divination" element={<Divination />} />
+      <Route path="/gacha" element={<Gacha />} />
+      <Route path="/rates" element={<Rates />} />
+      <Route path="/vault" element={<Vault />} />
       <Route path="/admin/login" element={<AdminLogin session={session} />} />
       <Route path="/admin/dashboard" element={<AdminDashboard session={session} />} />
       <Route path="/admin/videos" element={<VideoManager session={session} />} />

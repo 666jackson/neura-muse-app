@@ -139,24 +139,48 @@ function dayNumber(date) {
   return Math.floor((d.getTime() - d.getTimezoneOffset() * 60000) / 86400000);
 }
 
-// Deterministic pick of the day: same archetype + rarity for everyone, all day.
-export function dailyMuse(date) {
+// Turn a Supabase character row into the "muse" shape the cards render.
+// This is how the gacha / daily art links to the images you put in your DB.
+export function museFromCharacter(c) {
+  const nm = { en: c.name, zh: c.name, ja: c.name };
+  const desc = c.cinematic_description || '';
+  const el = c.energy_core || '—';
+  return {
+    key: c.id,
+    codename: (c.armor_type || c.name || '').toString().toUpperCase(),
+    name: nm,
+    element: { en: el, zh: el, ja: el },
+    weapon: c.weapon_system || '—',
+    color: c.color_theme || '#7dd3fc',
+    reading: { en: desc, zh: desc, ja: desc },
+    image: c.cover_image_url || null,   // ← real DB image
+    video: c.video_url || null,         // ← real DB motion reel (used on UR)
+    rarityHint: (c.rarity_level || '').trim().toUpperCase()
+  };
+}
+
+function rollRarity(rng) {
+  let roll = (rng ? rng() : Math.random()) * 100;
+  for (const r of RARITIES) { if (roll < r.rate) return r; roll -= r.rate; }
+  return RARITIES[0];
+}
+
+// Deterministic pick of the day: same muse + rarity for everyone, all day.
+// Pass a `pool` (mapped DB characters) to headline a real archetype; falls back to built-ins.
+export function dailyMuse(date, pool) {
+  const list = pool && pool.length ? pool : ARCHETYPES;
   const n = dayNumber(date);
   const rng = mulberry32(n * 2654435761);
-  const archetype = ARCHETYPES[Math.floor(rng() * ARCHETYPES.length)];
-  // Daily Muse skews rare — it is the headline of the day.
-  const pool = [...RARITIES].reverse();
-  let roll = rng() * 100, rarity = pool[pool.length - 1];
-  for (const r of RARITIES) { if (roll < r.rate) { rarity = r; break; } roll -= r.rate; }
+  const archetype = list[Math.floor(rng() * list.length)];
+  const rarity = rollRarity(rng);
   return { archetype, rarity, seed: n };
 }
 
-// A single gacha pull — weighted-random rarity + random archetype.
-export function drawOne() {
-  let roll = Math.random() * 100;
-  let rarity = RARITIES[0];
-  for (const r of RARITIES) { if (roll < r.rate) { rarity = r; break; } roll -= r.rate; }
-  const archetype = ARCHETYPES[Math.floor(Math.random() * ARCHETYPES.length)];
+// A single gacha pull — weighted-random rarity + random muse from the pool.
+export function drawOne(pool) {
+  const list = pool && pool.length ? pool : ARCHETYPES;
+  const rarity = rollRarity();
+  const archetype = list[Math.floor(Math.random() * list.length)];
   return { id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), archetype, rarity };
 }
 
