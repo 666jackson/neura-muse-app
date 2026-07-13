@@ -120,7 +120,7 @@ export async function fetchIntroVideos() {
     .eq('is_public', true)
     .order('order_index', { ascending: true })
     .order('created_at', { ascending: true })
-    .limit(2);
+    .limit(10);
   if (error) throw error;
   return data || [];
 }

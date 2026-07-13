@@ -44,8 +44,8 @@ function CardArt({ muse, video = false }) {
 
 function pickRandom(arr) { return arr && arr.length ? arr[Math.floor(Math.random() * arr.length)] : null; }
 
-// Click-through info modal for a pulled / selected muse.
-export function MuseModal({ open, muse, rarity, lang, t, onClose }) {
+// Click-through info modal for a pulled / selected muse (optional origin story).
+export function MuseModal({ open, muse, rarity, lang, t, story, onClose }) {
   return (
     <AnimatePresence>
       {open && muse && (
@@ -56,6 +56,12 @@ export function MuseModal({ open, muse, rarity, lang, t, onClose }) {
             transition={{ type: 'spring', stiffness: 160, damping: 18 }}
             onClick={(e) => e.stopPropagation()} className="w-full max-w-3xl">
             <MusePlate archetype={muse} rarity={rarity} lang={lang} t={t} typed />
+            {story && (
+              <div className="mt-5 rounded-2xl border border-white/12 bg-white/[0.03] p-6 lg:p-8">
+                <div className="font-mono text-[9px] tracking-[0.35em] mb-3" style={{ color: muse.color }}>◆ {t.storyTitle}</div>
+                <p className="font-light leading-loose text-chrome/80 whitespace-pre-line">{story}</p>
+              </div>
+            )}
             <button onClick={onClose}
               className="mt-5 mx-auto block font-mono text-[10px] tracking-[0.3em] text-chrome/50 hover:text-ice transition">✕ {t.tapDismiss}</button>
           </motion.div>
@@ -146,34 +152,36 @@ export function useTypewriter(text, speed = 22, run = true) {
 }
 
 // ---- shared muse plate (used by daily / oracle / gacha reveal) -------------
-export function MusePlate({ archetype, rarity, lang, t, typed = false }) {
+export function MusePlate({ archetype, rarity, lang, t, typed = false, large = false, video = false }) {
   const reading = archetype.reading[lang] || archetype.reading.en;
   const shown = useTypewriter(reading, 20, typed);
   const rar = rarity || RARITY_BY_KEY.SR;
+  const gold = rar.key === 'SSR' || rar.key === 'UR';
   return (
-    <HoloCard color={archetype.color} className="w-full overflow-hidden border border-white/12"
-      style={{ background: 'rgba(255,255,255,0.03)' }}>
-      <div className="grid sm:grid-cols-[minmax(0,220px)_1fr]">
-        <div className="relative min-h-[240px] overflow-hidden">
-          <CardArt muse={archetype} />
+    <HoloCard color={archetype.color} className={'w-full overflow-hidden border ' + (gold ? 'border-2 nm-gold-frame' : 'border-white/12')}
+      style={{ background: 'rgba(255,255,255,0.03)', borderColor: gold ? rar.color + 'ff' : undefined }}>
+      <div className={'grid ' + (large ? 'sm:grid-cols-[minmax(0,340px)_1fr]' : 'sm:grid-cols-[minmax(0,220px)_1fr]')}>
+        <div className={'relative overflow-hidden ' + (large ? 'min-h-[380px]' : 'min-h-[240px]')}>
+          <CardArt muse={archetype} video={video} />
           <div className="absolute inset-0 nm-scanlines opacity-30 pointer-events-none" />
-          <div className="absolute top-3 left-3 font-mono text-[9px] tracking-[0.3em] px-2 py-1 rounded-full border"
+          {gold && <div className="absolute inset-0 nm-holo-sweep pointer-events-none" />}
+          <div className="absolute top-3 left-3 font-mono text-[10px] tracking-[0.3em] px-2.5 py-1 rounded-full border"
             style={{ color: rar.color, borderColor: rar.color + '66', background: '#04050dcc' }}>{rar.key}</div>
           <div className="absolute bottom-4 left-4 right-4">
-            <div className="font-mono text-[9px] tracking-[0.3em]" style={{ color: archetype.color }}>{archetype.codename}</div>
-            <div className="font-display text-lg tracking-[0.12em]">{archetype.name[lang] || archetype.name.en}</div>
+            <div className={'font-mono tracking-[0.3em] ' + (large ? 'text-[10px]' : 'text-[9px]')} style={{ color: archetype.color }}>{archetype.codename}</div>
+            <div className={'font-display tracking-[0.12em] ' + (large ? 'text-2xl sm:text-3xl' : 'text-lg')}>{archetype.name[lang] || archetype.name.en}</div>
           </div>
         </div>
-        <div className="p-6">
+        <div className={large ? 'p-8 lg:p-10' : 'p-6'}>
           <dl className="grid grid-cols-3 gap-x-4 mb-4">
             {[[t.element, archetype.element[lang] || archetype.element.en], [t.weapon, archetype.weapon], [t.rarity, rar.key]].map(([k, v]) => (
               <div key={k} className="border-b border-white/10 pb-2">
-                <dt className="font-mono text-[8px] tracking-[0.25em] text-chrome/40 mb-1">{k}</dt>
-                <dd className="font-mono text-[11px]" style={{ color: archetype.color }}>{v}</dd>
+                <dt className={'font-mono tracking-[0.25em] text-chrome/40 mb-1 ' + (large ? 'text-[9px]' : 'text-[8px]')}>{k}</dt>
+                <dd className={'font-mono ' + (large ? 'text-sm' : 'text-[11px]')} style={{ color: archetype.color }}>{v}</dd>
               </div>
             ))}
           </dl>
-          <p className="font-light leading-relaxed text-chrome/80 text-sm min-h-[72px]">{shown}</p>
+          <p className={'font-light text-chrome/80 ' + (large ? 'text-base leading-loose min-h-[120px]' : 'text-sm leading-relaxed min-h-[72px]')}>{shown}</p>
         </div>
       </div>
     </HoloCard>
@@ -184,9 +192,32 @@ export function MusePlate({ archetype, rarity, lang, t, typed = false }) {
 export function DailyBlock({ lang, t }) {
   const pool = useMusePool();
   const daily = React.useMemo(() => dailyMuse(new Date(), pool), [pool]);
+  const [open, setOpen] = React.useState(false);
+  const a = daily.archetype, rar = daily.rarity;
+  const gold = rar.key === 'SSR' || rar.key === 'UR';
   return (
-    <div className="max-w-3xl">
-      <MusePlate archetype={daily.archetype} rarity={daily.rarity} lang={lang} t={t} />
+    <div className="max-w-4xl">
+      {/* big, clickable hero card */}
+      <button onClick={() => setOpen(true)} className="group block w-full text-left">
+        <HoloCard color={a.color} className={'overflow-hidden border-2 ' + (gold ? 'nm-gold-frame' : '')}
+          style={{ borderColor: rar.color + (gold ? 'ff' : '66') }}>
+          <div className="relative aspect-[4/5] sm:aspect-[16/9]">
+            <CardArt muse={a} video />
+            <div className="absolute inset-0 nm-scanlines opacity-25 pointer-events-none" />
+            {gold && <div className="absolute inset-0 nm-holo-sweep pointer-events-none" />}
+            <div className="absolute top-4 left-4 font-mono text-[10px] tracking-[0.3em] px-2.5 py-1 rounded-full border"
+              style={{ color: rar.color, borderColor: rar.color + '66', background: '#04050dcc' }}>{rar.key}</div>
+            <div className="absolute inset-x-0 bottom-0 p-6 lg:p-8 bg-gradient-to-t from-ink via-ink/60 to-transparent">
+              <div className="font-mono text-[10px] tracking-[0.35em] mb-1" style={{ color: a.color }}>{a.codename}</div>
+              <div className="font-display text-3xl lg:text-4xl tracking-[0.1em]">{a.name[lang] || a.name.en}</div>
+              <div className="mt-3 font-mono text-[10px] tracking-[0.3em] text-ice opacity-0 group-hover:opacity-100 transition">▸ {t.viewInfo}</div>
+            </div>
+          </div>
+        </HoloCard>
+      </button>
+
+      {/* click-through: intro + effects (typewriter reading + origin story) */}
+      <MuseModal open={open} muse={a} rarity={rar} lang={lang} t={t} story={storyFor(a.key, lang)} onClose={() => setOpen(false)} />
     </div>
   );
 }
@@ -216,7 +247,7 @@ export function OracleBlock({ lang, t }) {
   };
 
   return (
-    <div className="max-w-3xl">
+    <div className="max-w-4xl">
       <div className="flex gap-2 mb-8">
         {[['zodiac', t.tabZodiac], ['quiz', t.tabQuiz]].map(([k, label]) => (
           <button key={k} onClick={() => { setTab(k); restart(); }}
@@ -244,7 +275,7 @@ export function OracleBlock({ lang, t }) {
           <motion.div key="res" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <div className="font-mono text-[10px] tracking-[0.35em] text-ice mb-3">{t.yourMuse}</div>
             <MusePlate archetype={{ ...result, image: (portrait && portrait.image) || result.image, video: portrait && portrait.video }}
-              lang={lang} t={t} typed />
+              lang={lang} t={t} typed large video />
             {/* story / lore */}
             <div className="mt-6 rounded-2xl border border-white/12 bg-white/[0.03] p-6 lg:p-8">
               <div className="font-mono text-[9px] tracking-[0.35em] mb-3" style={{ color: result.color }}>◆ {t.storyTitle}</div>

@@ -223,13 +223,6 @@ export default function Home() {
                 style={{ filter: 'hue-rotate(150deg) saturate(4)' }} />
             )}
 
-            {/* Enhanced cinematic flicker stack */}
-            <div className="absolute inset-0 nm-scanlines pointer-events-none" />
-            <div className="absolute inset-0 overflow-hidden pointer-events-none nm-flicker">
-              <div className="nm-scanline" />
-              <div className="nm-scanline-2" />
-            </div>
-
             {/* Soft fade — keeps centered text readable and blends into the page below */}
             <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-transparent to-ink" />
 

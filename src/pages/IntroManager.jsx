@@ -3,16 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAllIntroVideos, upsertIntroVideo, deleteIntroVideo, uploadIntroVideo, uploadAsset, signOut } from '../lib/supabase.js';
 import { T } from '../i18n.js';
 
-// Manages exactly two clips (slot 0 + slot 1) played before the hero rotation.
-const SLOTS = [0, 1];
+// Up to 10 clips play in order on the homepage, before the character image rotation.
+const MAX = 10;
 
 export default function IntroManager({ session }) {
   const navigate = useNavigate();
   const lang = localStorage.getItem('nm_lang') || 'en';
   const t = T[lang];
   const [rows, setRows] = React.useState([]);
-  const [busy, setBusy] = React.useState(null); // slot index currently uploading
+  const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState(null);
+  const [progress, setProgress] = React.useState(null); // { done, total }
+  const [dropOver, setDropOver] = React.useState(false);
+  const vidInputRef = React.useRef(null);
 
   React.useEffect(() => {
     if (session === null) return;
@@ -20,35 +23,40 @@ export default function IntroManager({ session }) {
     fetchAllIntroVideos().then(setRows).catch((e) => setError(e.message));
   }, [session, navigate]);
 
-  const bySlot = (slot) => rows.find((r) => r.order_index === slot) || null;
-
   const refresh = async () => setRows(await fetchAllIntroVideos());
 
-  const uploadVideoForSlot = async (slot, e) => {
-    const f = e.target.files[0];
-    e.target.value = '';
-    if (!f) return;
-    setBusy(slot); setError(null);
+  // Batch import: drag or pick many clips → each is appended as an intro clip (capped at 10).
+  const processIntros = async (fileList) => {
+    let files = Array.from(fileList || []).filter((f) => f.type && f.type.startsWith('video'));
+    const room = MAX - rows.length;
+    if (room <= 0) { setError('Maximum of ' + MAX + ' intro clips reached.'); return; }
+    if (files.length > room) { setError('Only ' + room + ' more clip(s) allowed — extra files were skipped.'); files = files.slice(0, room); }
+    if (!files.length) return;
+    setBusy(true); if (files.length <= room) setError(null); setProgress({ done: 0, total: files.length });
+    let done = 0;
     try {
-      const url = await uploadIntroVideo(f);
-      const existing = bySlot(slot);
-      await upsertIntroVideo({ ...(existing || {}), order_index: slot, video_url: url, is_public: existing ? existing.is_public : true });
+      const base = rows.length;
+      await Promise.all(files.map(async (f, i) => {
+        const url = await uploadIntroVideo(f);
+        const title = f.name.replace(/\.[^.]+$/, '');
+        await upsertIntroVideo({ title, video_url: url, order_index: base + i, is_public: true });
+        done += 1; setProgress({ done, total: files.length });
+      }));
       await refresh();
-    } catch (err) { setError(err.message); } finally { setBusy(null); }
+    } catch (err) { setError(err.message); } finally { setBusy(false); setProgress(null); }
   };
+  const pickIntros = (e) => { const fl = e.target.files; e.target.value = ''; processIntros(fl); };
 
-  const uploadPosterForSlot = async (slot, e) => {
+  const uploadPoster = async (row, e) => {
     const f = e.target.files[0];
     e.target.value = '';
     if (!f) return;
-    const existing = bySlot(slot);
-    if (!existing) { setError('Upload the clip first, then the poster.'); return; }
-    setBusy(slot); setError(null);
+    setBusy(true); setError(null);
     try {
       const url = await uploadAsset('videos', f, 'intro/posters/');
-      await upsertIntroVideo({ ...existing, poster_url: url });
+      await upsertIntroVideo({ ...row, poster_url: url });
       await refresh();
-    } catch (err) { setError(err.message); } finally { setBusy(null); }
+    } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
 
   const togglePublic = async (row) => {
@@ -61,6 +69,21 @@ export default function IntroManager({ session }) {
     await deleteIntroVideo(row.id);
     await refresh();
   };
+
+  // ---- drag-to-reorder ----
+  const dragIndex = React.useRef(null);
+  const reorder = async (from, to) => {
+    if (from == null || to == null || from === to) return;
+    const next = [...rows];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setRows(next); // optimistic
+    try {
+      await Promise.all(next.map((r, idx) => upsertIntroVideo({ ...r, order_index: idx })));
+    } catch (err) { setError(err.message); await refresh(); }
+  };
+
+  const full = rows.length >= MAX;
 
   return (
     <div className="min-h-screen bg-ink text-chrome px-8 lg:px-16 py-12 max-w-5xl mx-auto">
@@ -75,51 +98,67 @@ export default function IntroManager({ session }) {
         </div>
       </div>
 
-      <p className="font-mono text-[10px] tracking-wider text-chrome/40 mb-8 leading-relaxed">
-        These two clips play in order on the homepage <span className="text-ice">before</span> the character image rotation begins. Clip 1 → Clip 2 → then the archive reveals.
+      <p className="font-mono text-[10px] tracking-wider text-chrome/40 mb-6 leading-relaxed">
+        Up to <span className="text-ice">{MAX}</span> clips play in order on the homepage <span className="text-ice">before</span> the character image rotation. Drag the handle to reorder. ({rows.length}/{MAX})
       </p>
 
       {error && <div className="font-mono text-xs text-red-400 mb-6">▮ {error}</div>}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {SLOTS.map((slot) => {
-          const row = bySlot(slot);
-          return (
-            <div key={slot} className="rounded-2xl border border-white/12 bg-white/[0.03] p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="font-display text-sm tracking-[0.2em]">CLIP {slot + 1}</div>
-                {row && (
-                  <button onClick={() => togglePublic(row)} className={'font-mono text-[9px] tracking-widest rounded-full px-3 py-1.5 border ' + (row.is_public ? 'border-ice/50 text-ice bg-ice/10' : 'border-white/15 text-chrome/40')}>
-                    {row.is_public ? '● PUBLIC' : '○ HIDDEN'}
-                  </button>
-                )}
-              </div>
+      {/* ---- DRAG-AND-DROP ZONE — drag clips straight from Photos / Finder ---- */}
+      <div
+        onDragOver={(e) => { if (!full) { e.preventDefault(); setDropOver(true); } }}
+        onDragLeave={() => setDropOver(false)}
+        onDrop={(e) => { e.preventDefault(); setDropOver(false); if (!full) processIntros(e.dataTransfer.files); }}
+        onClick={() => !full && vidInputRef.current && vidInputRef.current.click()}
+        className={'mb-6 rounded-2xl border border-dashed p-8 text-center transition ' +
+          (full ? 'border-white/10 opacity-40 cursor-not-allowed' : (dropOver ? 'border-ice bg-ice/10 cursor-pointer' : 'border-white/20 hover:border-ice/60 cursor-pointer')) +
+          (busy ? ' opacity-50 pointer-events-none' : '')}>
+        <div className="text-2xl mb-2">⤓</div>
+        <div className="font-display text-xs tracking-[0.25em] mb-1">{full ? 'MAX ' + MAX + ' CLIPS' : t.dropVideos}</div>
+        <div className="font-mono text-[9px] tracking-[0.3em] text-chrome/45">{full ? 'REMOVE ONE TO ADD MORE' : t.dropMany}</div>
+        <input ref={vidInputRef} type="file" accept="video/*" multiple hidden onChange={pickIntros} />
+      </div>
 
-              {row && row.video_url ? (
-                <video src={row.video_url} controls playsInline poster={row.poster_url || undefined}
-                  className="w-full aspect-video rounded-lg border border-white/10 bg-ink mb-4 object-cover" />
+      {progress && (
+        <div className="font-mono text-xs text-ice mb-6">▮ {t.adding} {progress.done}/{progress.total}…</div>
+      )}
+
+      <div className="flex flex-col gap-3">
+        {rows.length === 0 && (
+          <div className="rounded-xl border border-dashed border-white/15 p-8 text-center font-mono text-[10px] tracking-[0.3em] text-chrome/40">
+            NO INTRO CLIPS YET
+          </div>
+        )}
+        {rows.map((r, i) => (
+          <div key={r.id}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => { reorder(dragIndex.current, i); dragIndex.current = null; }}
+            className="flex items-center gap-3 rounded-xl border border-white/12 bg-white/[0.03] p-3">
+            <span draggable onDragStart={() => (dragIndex.current = i)}
+              title="Drag to reorder"
+              className="cursor-grab active:cursor-grabbing select-none px-1 text-chrome/40 hover:text-ice text-lg leading-none">⠿</span>
+            <div className="font-mono text-[11px] text-ice w-6 text-center">{i + 1}</div>
+            <div className="w-24 h-14 rounded-lg border border-white/10 bg-ink overflow-hidden flex-shrink-0">
+              {r.poster_url ? (
+                <img src={r.poster_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full aspect-video rounded-lg border border-dashed border-white/15 flex items-center justify-center font-mono text-[9px] tracking-[0.3em] text-chrome/35 mb-4">
-                  {busy === slot ? 'UPLOADING…' : 'NO CLIP YET'}
-                </div>
+                <video src={r.video_url} muted playsInline preload="metadata" className="w-full h-full object-cover" />
               )}
-
-              <div className="flex flex-wrap gap-2">
-                <label className={'inline-flex font-mono text-[10px] tracking-widest text-ice border border-ice/40 rounded-lg px-3 py-2 cursor-pointer hover:bg-ice/10 ' + (busy === slot ? 'opacity-50 pointer-events-none' : '')}>
-                  ↥ {row ? 'REPLACE' : t.importVideo}
-                  <input type="file" accept="video/*" hidden onChange={(e) => uploadVideoForSlot(slot, e)} />
-                </label>
-                <label className={'inline-flex font-mono text-[10px] tracking-widest text-chrome/60 border border-white/20 rounded-lg px-3 py-2 cursor-pointer hover:border-ice hover:text-ice ' + (busy === slot ? 'opacity-50 pointer-events-none' : '')}>
-                  ◺ POSTER
-                  <input type="file" accept="image/*" hidden onChange={(e) => uploadPosterForSlot(slot, e)} />
-                </label>
-                {row && (
-                  <button onClick={() => remove(row)} className="font-mono text-[10px] text-red-400 border border-red-400/40 rounded-lg px-3 py-2 hover:bg-red-400/10">✕ REMOVE</button>
-                )}
-              </div>
             </div>
-          );
-        })}
+            <div className="flex-1 min-w-0">
+              <div className="font-display text-xs tracking-widest truncate">{r.title || 'INTRO CLIP ' + (i + 1)}</div>
+              <div className="font-mono text-[9px] text-chrome/40 truncate">{r.video_url}</div>
+            </div>
+            <button onClick={() => togglePublic(r)} className={'font-mono text-[9px] tracking-widest rounded-full px-3 py-1.5 border ' + (r.is_public ? 'border-ice/50 text-ice bg-ice/10' : 'border-white/15 text-chrome/40')}>
+              {r.is_public ? '● PUBLIC' : '○ HIDDEN'}
+            </button>
+            <label className="font-mono text-[10px] tracking-widest text-chrome/60 border border-white/20 rounded-lg px-3 py-2 cursor-pointer hover:border-ice hover:text-ice">
+              ◺ POSTER
+              <input type="file" accept="image/*" hidden onChange={(e) => uploadPoster(r, e)} />
+            </label>
+            <button onClick={() => remove(r)} className="font-mono text-[10px] text-red-400 border border-red-400/40 rounded-lg px-3 py-2 hover:bg-red-400/10">✕</button>
+          </div>
+        ))}
       </div>
     </div>
   );
