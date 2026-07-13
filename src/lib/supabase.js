@@ -47,6 +47,28 @@ export async function deleteCharacter(id) {
 }
 
 // ---- storage ----
+
+// Turn an opaque Supabase error into an actionable message. Uploads can fail for
+// a few recurring reasons that otherwise surface as a blank or cryptic string.
+export function explainError(error, context = 'upload') {
+  const msg = (error && (error.message || error.error || String(error))) || 'Unknown error';
+  const status = error && (error.statusCode || error.status);
+  const low = msg.toLowerCase();
+  if (low.includes('row-level security') || low.includes('violates') || low.includes('policy') || status === 403 || status === '403') {
+    return 'Permission denied — your logged-in account is not registered as an admin, so ' + context + ' is blocked by row-level security. Add your user to the public.admins table in Supabase.';
+  }
+  if (low.includes('exceeded') || low.includes('maximum allowed size') || low.includes('too large') || low.includes('payload') || status === 413 || status === '413') {
+    return 'File too large — it exceeds the storage bucket size limit. Raise file_size_limit on the "videos" bucket in Supabase (Storage → bucket settings).';
+  }
+  if (low.includes('bucket not found') || low.includes('not found') || status === 404 || status === '404') {
+    return 'Storage bucket "videos" was not found — run supabase/schema.sql against your project to create it.';
+  }
+  if (low.includes('jwt') || low.includes('not authenticated') || low.includes('unauthorized') || status === 401 || status === '401') {
+    return 'Session expired — sign out and sign back in, then retry.';
+  }
+  return msg;
+}
+
 // contentType + a long cache header let the CDN serve repeat views instantly and
 // skip content sniffing, which noticeably speeds up video delivery after upload.
 export async function uploadAsset(bucket, file, prefix = '') {
@@ -56,7 +78,7 @@ export async function uploadAsset(bucket, file, prefix = '') {
     cacheControl: '31536000',
     contentType: file.type || undefined
   });
-  if (error) throw error;
+  if (error) throw new Error(explainError(error, 'upload'));
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
 }
@@ -96,7 +118,7 @@ export async function upsertVideo(video) {
     .upsert({ ...video, updated_at: new Date().toISOString() })
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(explainError(error, 'saving the video'));
   return data;
 }
 
@@ -141,7 +163,7 @@ export async function upsertIntroVideo(row) {
     .upsert({ ...row, updated_at: new Date().toISOString() })
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(explainError(error, 'saving the intro clip'));
   return data;
 }
 

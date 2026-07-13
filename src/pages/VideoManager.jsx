@@ -15,9 +15,6 @@ export default function VideoManager({ session }) {
   const [form, setForm] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState(null);
-  const [progress, setProgress] = React.useState(null); // batch upload { done, total }
-  const [dropOver, setDropOver] = React.useState(false);
-  const vidInputRef = React.useRef(null);
 
   React.useEffect(() => {
     if (session === null) return; // still resolving
@@ -46,25 +43,6 @@ export default function VideoManager({ session }) {
       setForm((prev) => ({ ...prev, poster_url: url }));
     } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
-
-  // Batch import: drag or pick many video files → each becomes a published reel, auto-titled from its filename.
-  const processVideos = async (fileList) => {
-    const files = Array.from(fileList || []).filter((f) => f.type && f.type.startsWith('video'));
-    if (!files.length) return;
-    setBusy(true); setError(null); setProgress({ done: 0, total: files.length });
-    let done = 0;
-    try {
-      const base = rows.length;
-      await Promise.all(files.map(async (f, i) => {
-        const url = await uploadVideo(f);
-        const title = f.name.replace(/\.[^.]+$/, '');
-        await upsertVideo({ title, description: '', video_url: url, poster_url: '', order_index: base + i + 1, is_public: true });
-        done += 1; setProgress({ done, total: files.length });
-      }));
-      setRows(await fetchAllVideos());
-    } catch (err) { setError(err.message); } finally { setBusy(false); setProgress(null); }
-  };
-  const quickVideos = (e) => { const fl = e.target.files; e.target.value = ''; processVideos(fl); };
 
   const save = async () => {
     setBusy(true); setError(null);
@@ -116,23 +94,6 @@ export default function VideoManager({ session }) {
       </div>
 
       {error && <div className="font-mono text-xs text-red-400 mb-6">▮ {error}</div>}
-
-      {/* ---- DRAG-AND-DROP ZONE — drag video files straight from Photos / Finder ---- */}
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDropOver(true); }}
-        onDragLeave={() => setDropOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDropOver(false); processVideos(e.dataTransfer.files); }}
-        onClick={() => vidInputRef.current && vidInputRef.current.click()}
-        className={'mb-6 rounded-2xl border border-dashed p-8 text-center cursor-pointer transition ' + (dropOver ? 'border-ice bg-ice/10' : 'border-white/20 hover:border-ice/60') + (busy ? ' opacity-50 pointer-events-none' : '')}>
-        <div className="text-2xl mb-2">⤓</div>
-        <div className="font-display text-xs tracking-[0.25em] mb-1">{t.dropVideos}</div>
-        <div className="font-mono text-[9px] tracking-[0.3em] text-chrome/45">{t.dropMany}</div>
-        <input ref={vidInputRef} type="file" accept="video/*" multiple hidden onChange={quickVideos} />
-      </div>
-
-      {progress && (
-        <div className="font-mono text-xs text-ice mb-6">▮ {t.adding} {progress.done}/{progress.total}…</div>
-      )}
 
       <div className="grid lg:grid-cols-2 gap-8 items-start">
         <div className="flex flex-col gap-3">

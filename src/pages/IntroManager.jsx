@@ -13,8 +13,6 @@ export default function IntroManager({ session }) {
   const [rows, setRows] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState(null);
-  const [progress, setProgress] = React.useState(null); // { done, total }
-  const [dropOver, setDropOver] = React.useState(false);
   const vidInputRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -25,27 +23,21 @@ export default function IntroManager({ session }) {
 
   const refresh = async () => setRows(await fetchAllIntroVideos());
 
-  // Batch import: drag or pick many clips → each is appended as an intro clip (capped at 10).
-  const processIntros = async (fileList) => {
-    let files = Array.from(fileList || []).filter((f) => f.type && f.type.startsWith('video'));
-    const room = MAX - rows.length;
-    if (room <= 0) { setError('Maximum of ' + MAX + ' intro clips reached.'); return; }
-    if (files.length > room) { setError('Only ' + room + ' more clip(s) allowed — extra files were skipped.'); files = files.slice(0, room); }
-    if (!files.length) return;
-    setBusy(true); if (files.length <= room) setError(null); setProgress({ done: 0, total: files.length });
-    let done = 0;
+  // One at a time: pick a single clip → upload it → append it to the list.
+  const addOne = async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    if (!(f.type && f.type.startsWith('video'))) { setError('Please choose a video file.'); return; }
+    if (rows.length >= MAX) { setError('Maximum of ' + MAX + ' intro clips reached.'); return; }
+    setBusy(true); setError(null);
     try {
-      const base = rows.length;
-      await Promise.all(files.map(async (f, i) => {
-        const url = await uploadIntroVideo(f);
-        const title = f.name.replace(/\.[^.]+$/, '');
-        await upsertIntroVideo({ title, video_url: url, order_index: base + i, is_public: true });
-        done += 1; setProgress({ done, total: files.length });
-      }));
+      const url = await uploadIntroVideo(f);
+      const title = f.name.replace(/\.[^.]+$/, '');
+      await upsertIntroVideo({ title, video_url: url, order_index: rows.length, is_public: true });
       await refresh();
-    } catch (err) { setError(err.message); } finally { setBusy(false); setProgress(null); }
+    } catch (err) { setError(err.message); } finally { setBusy(false); }
   };
-  const pickIntros = (e) => { const fl = e.target.files; e.target.value = ''; processIntros(fl); };
 
   const uploadPoster = async (row, e) => {
     const f = e.target.files[0];
@@ -104,24 +96,23 @@ export default function IntroManager({ session }) {
 
       {error && <div className="font-mono text-xs text-red-400 mb-6">▮ {error}</div>}
 
-      {/* ---- DRAG-AND-DROP ZONE — drag clips straight from Photos / Finder ---- */}
-      <div
-        onDragOver={(e) => { if (!full) { e.preventDefault(); setDropOver(true); } }}
-        onDragLeave={() => setDropOver(false)}
-        onDrop={(e) => { e.preventDefault(); setDropOver(false); if (!full) processIntros(e.dataTransfer.files); }}
-        onClick={() => !full && vidInputRef.current && vidInputRef.current.click()}
-        className={'mb-6 rounded-2xl border border-dashed p-8 text-center transition ' +
-          (full ? 'border-white/10 opacity-40 cursor-not-allowed' : (dropOver ? 'border-ice bg-ice/10 cursor-pointer' : 'border-white/20 hover:border-ice/60 cursor-pointer')) +
-          (busy ? ' opacity-50 pointer-events-none' : '')}>
-        <div className="text-2xl mb-2">⤓</div>
-        <div className="font-display text-xs tracking-[0.25em] mb-1">{full ? 'MAX ' + MAX + ' CLIPS' : t.dropVideos}</div>
-        <div className="font-mono text-[9px] tracking-[0.3em] text-chrome/45">{full ? 'REMOVE ONE TO ADD MORE' : t.dropMany}</div>
-        <input ref={vidInputRef} type="file" accept="video/*" multiple hidden onChange={pickIntros} />
+      {/* ---- ADD ONE CLIP AT A TIME — pick a single video, upload, repeat ---- */}
+      <div className="mb-6">
+        <button
+          onClick={() => !full && !busy && vidInputRef.current && vidInputRef.current.click()}
+          disabled={full || busy}
+          className={'w-full rounded-2xl border border-dashed p-8 text-center transition ' +
+            (full || busy ? 'border-white/10 opacity-40 cursor-not-allowed' : 'border-white/20 hover:border-ice/60 cursor-pointer')}>
+          <div className="text-2xl mb-2">⤓</div>
+          <div className="font-display text-xs tracking-[0.25em] mb-1">
+            {full ? 'MAX ' + MAX + ' CLIPS' : busy ? 'UPLOADING…' : '+ ADD INTRO CLIP'}
+          </div>
+          <div className="font-mono text-[9px] tracking-[0.3em] text-chrome/45">
+            {full ? 'REMOVE ONE TO ADD MORE' : 'PICK ONE VIDEO FROM YOUR DEVICE'}
+          </div>
+        </button>
+        <input ref={vidInputRef} type="file" accept="video/*" hidden onChange={addOne} />
       </div>
-
-      {progress && (
-        <div className="font-mono text-xs text-ice mb-6">▮ {t.adding} {progress.done}/{progress.total}…</div>
-      )}
 
       <div className="flex flex-col gap-3">
         {rows.length === 0 && (
