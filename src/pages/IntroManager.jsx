@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { fetchAllIntroVideos, upsertIntroVideo, deleteIntroVideo, uploadIntroVideo, uploadAsset, signOut } from '../lib/supabase.js';
 import { T } from '../i18n.js';
 
-// Up to 10 clips play in order on the homepage, before the character image rotation.
-const MAX = 10;
+// Up to 30 clips play in order on the homepage, before the character image rotation.
+const MAX = 30;
 
 export default function IntroManager({ session }) {
   const navigate = useNavigate();
