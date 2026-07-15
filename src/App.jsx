@@ -6,6 +6,8 @@ import Divination from './pages/oracle/Divination.jsx';
 import Gacha from './pages/oracle/Gacha.jsx';
 import Rates from './pages/oracle/Rates.jsx';
 import Vault from './pages/oracle/Vault.jsx';
+import Battle from './pages/game/Battle.jsx';
+import Arts from './pages/game/Arts.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
 import VideoManager from './pages/VideoManager.jsx';
@@ -29,6 +31,8 @@ export default function App() {
       <Route path="/gacha" element={<Gacha />} />
       <Route path="/rates" element={<Rates />} />
       <Route path="/vault" element={<Vault />} />
+      <Route path="/battle" element={<Battle />} />
+      <Route path="/arts" element={<Arts />} />
       <Route path="/admin/login" element={<AdminLogin session={session} />} />
       <Route path="/admin/dashboard" element={<AdminDashboard session={session} />} />
       <Route path="/admin/videos" element={<VideoManager session={session} />} />

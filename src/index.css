@@ -109,10 +109,71 @@ body { margin: 0; background: #04050d; color: #e8ecf4; font-family: 'Space Grote
 @keyframes nmRadar { 0% { transform: scale(0.2); opacity: 0.9; } 100% { transform: scale(1); opacity: 0; } }
 .nm-radar { border: 1px solid rgba(125,211,252,0.5); animation: nmRadar 1.9s ease-out infinite; }
 
+/* ============ ARENA — battle board + signature-art FX ============ */
+/* frozen unit: a pale ice sheet with a slow crystalline drift */
+@keyframes nmFxFrost { 0%,100% { opacity: .55; } 50% { opacity: .8; } }
+.nm-fx-frozen {
+  background:
+    linear-gradient(135deg, rgba(125,211,252,0.42), rgba(255,255,255,0.18) 45%, rgba(125,211,252,0.42)),
+    repeating-linear-gradient(60deg, rgba(255,255,255,0.14) 0 2px, transparent 2px 7px);
+  mix-blend-mode: screen;
+  animation: nmFxFrost 2.4s ease-in-out infinite;
+}
+
+/* nano shield bubble around a fortified unit */
+@keyframes nmFxShield {
+  0%,100% { box-shadow: inset 0 0 14px rgba(125,211,252,0.55), 0 0 12px rgba(125,211,252,0.35); }
+  50%     { box-shadow: inset 0 0 24px rgba(125,211,252,0.85), 0 0 22px rgba(125,211,252,0.6); }
+}
+.nm-fx-shield { animation: nmFxShield 1.8s ease-in-out infinite; }
+
+/* the art trigger button, breathing while it is chargeable */
+@keyframes nmFxArtReady {
+  0%,100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50%     { box-shadow: 0 0 0 5px transparent; opacity: .82; }
+}
+.nm-fx-artready { animation: nmFxArtReady 1.5s ease-out infinite; }
+
+/* art title glow */
+@keyframes nmFxTextGlow {
+  0%,100% { text-shadow: 0 0 18px currentColor, 0 0 44px currentColor; }
+  50%     { text-shadow: 0 0 30px currentColor, 0 0 76px currentColor; }
+}
+.nm-fx-textglow { animation: nmFxTextGlow 1.1s ease-in-out infinite; }
+
+/* ABSOLUTE ZERO — the freezing sheet + shards */
+.nm-fx-frostwall {
+  background: linear-gradient(0deg, rgba(125,211,252,0.55), rgba(125,211,252,0.16) 60%, transparent);
+  backdrop-filter: blur(2px);
+  mix-blend-mode: screen;
+}
+.nm-fx-shard {
+  width: 26px; height: 26px;
+  border-width: 2px; border-style: solid;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  mix-blend-mode: screen;
+}
+
+/* FINAL ACT — the blade sweep */
+.nm-fx-slash { mix-blend-mode: screen; }
+
+/* HOLD THE LINE — hex lattice */
+.nm-fx-hex {
+  background-image:
+    repeating-linear-gradient(60deg,  currentColor 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(-60deg, currentColor 0 1px, transparent 1px 26px),
+    repeating-linear-gradient(0deg,   currentColor 0 1px, transparent 1px 26px);
+  mix-blend-mode: screen;
+}
+
+/* TIDAL RECALL — wave bands */
+.nm-fx-wave { mix-blend-mode: screen; filter: blur(2px); }
+
 @media (prefers-reduced-motion: reduce) {
   .nm-scanline, .nm-scanline-2, .nm-flicker, .nm-glitch, .nm-grid,
   .nm-orb-a, .nm-orb-b, .nm-ken, .nm-marquee, .nm-marquee-fast, .nm-music-spin,
-  .nm-gold-frame, .nm-holo-sweep, .nm-ur-rays, .nm-ur-pulse, .nm-radar { animation: none !important; }
+  .nm-gold-frame, .nm-holo-sweep, .nm-ur-rays, .nm-ur-pulse, .nm-radar,
+  .nm-fx-frozen, .nm-fx-shield, .nm-fx-artready, .nm-fx-textglow { animation: none !important; }
   .nm-scanline, .nm-scanline-2, .nm-glitch { display: none; }
   .nm-intro { animation: none; display: none; }
 }
